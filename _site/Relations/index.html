@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Relations: Inductive definition of relations | Programming Language Foundations in Agda
+</title><!-- Begin Jekyll SEO tag v2.5.0 -->
+<meta name="generator" content="Jekyll v3.7.4" />
+<meta property="og:title" content="Relations: Inductive definition of relations" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Programming Language Foundations in Agda" />
+<meta property="og:description" content="Programming Language Foundations in Agda" />
+<link rel="canonical" href="https://plfa.github.io/Relations/" />
+<meta property="og:url" content="https://plfa.github.io/Relations/" />
+<meta property="og:site_name" content="Programming Language Foundations in Agda" />
+<script type="application/ld+json">
+{"description":"Programming Language Foundations in Agda","@type":"WebPage","url":"https://plfa.github.io/Relations/","headline":"Relations: Inductive definition of relations","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"></head>
+<body><header class="site-header" role="banner">
+
+    <div class="wrapper">
+
+        <a class="site-title" href="/">Programming Language Foundations in Agda
+</a>
+
+        <nav class="site-nav">
+            <span class="menu-icon">
+                <svg viewBox="0 0 18 15" width="18px" height="15px">
+                    <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+                    <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+                    <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+                </svg>
+            </span>
+
+            <div class="trigger">
+                <a class="page-link" href="/">Table of Contents</a>
+                <a class="page-link" href="/GettingStarted/">Getting Started</a>
+            </div>
+        </nav>
+
+    </div>
+
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post">
+
+  <header class="post-header">
+      <h1 class="post-title">Relations: Inductive definition of relations</h1>
+  </header>
+
+  <p style="text-align:center;">
+    
+    <a alt="Previous chapter" href="/Induction/">Prev</a>
+    &bullet;
+    
+    
+    <a alt="Source code" href="https://github.com/plfa/plfa.github.io/blob/dev/src/plfa/Relations.lagda">Source</a>
+    
+    
+    &bullet;
+    <a alt="Next chapter" href="/Equality/">Next</a>
+    
+</p>
+
+
+  <div class="post-content">
+    <pre class="Agda"><a id="170" class="Keyword">module</a> <a id="177" href="/Relations/" class="Module">plfa.Relations</a> <a id="192" class="Keyword">where</a></pre>
+
+<p>After having defined operations such as addition and multiplication,
+the next step is to define relations, such as <em>less than or equal</em>.</p>
+
+<h2 id="imports">Imports</h2>
+
+<pre class="Agda"><a id="373" class="Keyword">import</a> <a id="380" href="https://agda.github.io/agda-stdlib/Relation.Binary.PropositionalEquality.html" class="Module">Relation.Binary.PropositionalEquality</a> <a id="418" class="Symbol">as</a> <a id="421" class="Module">Eq</a>
+<a id="424" class="Keyword">open</a> <a id="429" href="https://agda.github.io/agda-stdlib/Relation.Binary.PropositionalEquality.html" class="Module">Eq</a> <a id="432" class="Keyword">using</a> <a id="438" class="Symbol">(</a><a id="439" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#83" class="Datatype Operator">_≡_</a><a id="442" class="Symbol">;</a> <a id="444" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a><a id="448" class="Symbol">;</a> <a id="450" href="https://agda.github.io/agda-stdlib/Relation.Binary.PropositionalEquality.html#1170" class="Function">cong</a><a id="454" class="Symbol">;</a> <a id="456" href="https://agda.github.io/agda-stdlib/Relation.Binary.PropositionalEquality.Core.html#838" class="Function">sym</a><a id="459" class="Symbol">)</a>
+<a id="461" class="Keyword">open</a> <a id="466" class="Keyword">import</a> <a id="473" href="https://agda.github.io/agda-stdlib/Data.Nat.html" class="Module">Data.Nat</a> <a id="482" class="Keyword">using</a> <a id="488" class="Symbol">(</a><a id="489" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="490" class="Symbol">;</a> <a id="492" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#115" class="InductiveConstructor">zero</a><a id="496" class="Symbol">;</a> <a id="498" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a><a id="501" class="Symbol">;</a> <a id="503" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#230" class="Primitive Operator">_+_</a><a id="506" class="Symbol">;</a> <a id="508" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#433" class="Primitive Operator">_*_</a><a id="511" class="Symbol">;</a> <a id="513" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#320" class="Primitive Operator">_∸_</a><a id="516" class="Symbol">)</a>
+<a id="518" class="Keyword">open</a> <a id="523" class="Keyword">import</a> <a id="530" href="https://agda.github.io/agda-stdlib/Data.Nat.Properties.html" class="Module">Data.Nat.Properties</a> <a id="550" class="Keyword">using</a> <a id="556" class="Symbol">(</a><a id="557" href="https://agda.github.io/agda-stdlib/Data.Nat.Properties.html#9708" class="Function">+-comm</a><a id="563" class="Symbol">;</a> <a id="565" href="https://agda.github.io/agda-stdlib/Data.Nat.Properties.html#9272" class="Function">+-suc</a><a id="570" class="Symbol">)</a>
+<a id="572" class="Keyword">open</a> <a id="577" class="Keyword">import</a> <a id="584" href="https://agda.github.io/agda-stdlib/Data.List.html" class="Module">Data.List</a> <a id="594" class="Keyword">using</a> <a id="600" class="Symbol">(</a><a id="601" href="https://agda.github.io/agda-stdlib/Agda.Builtin.List.html#80" class="Datatype">List</a><a id="605" class="Symbol">;</a> <a id="607" href="https://agda.github.io/agda-stdlib/Data.List.Base.html#8785" class="InductiveConstructor">[]</a><a id="609" class="Symbol">;</a> <a id="611" href="https://agda.github.io/agda-stdlib/Agda.Builtin.List.html#132" class="InductiveConstructor Operator">_∷_</a><a id="614" class="Symbol">)</a>
+<a id="616" class="Keyword">open</a> <a id="621" class="Keyword">import</a> <a id="628" href="https://agda.github.io/agda-stdlib/Function.html" class="Module">Function</a> <a id="637" class="Keyword">using</a> <a id="643" class="Symbol">(</a><a id="644" href="https://agda.github.io/agda-stdlib/Function.html#1068" class="Function">id</a><a id="646" class="Symbol">;</a> <a id="648" href="https://agda.github.io/agda-stdlib/Function.html#769" class="Function Operator">_∘_</a><a id="651" class="Symbol">)</a>
+<a id="653" class="Keyword">open</a> <a id="658" class="Keyword">import</a> <a id="665" href="https://agda.github.io/agda-stdlib/Relation.Nullary.html" class="Module">Relation.Nullary</a> <a id="682" class="Keyword">using</a> <a id="688" class="Symbol">(</a><a id="689" href="https://agda.github.io/agda-stdlib/Relation.Nullary.html#464" class="Function Operator">¬_</a><a id="691" class="Symbol">)</a>
+<a id="693" class="Keyword">open</a> <a id="698" class="Keyword">import</a> <a id="705" href="https://agda.github.io/agda-stdlib/Data.Empty.html" class="Module">Data.Empty</a> <a id="716" class="Keyword">using</a> <a id="722" class="Symbol">(</a><a id="723" href="https://agda.github.io/agda-stdlib/Data.Empty.html#243" class="Datatype">⊥</a><a id="724" class="Symbol">;</a> <a id="726" href="https://agda.github.io/agda-stdlib/Data.Empty.html#360" class="Function">⊥-elim</a><a id="732" class="Symbol">)</a></pre>
+
+<h2 id="defining-relations">Defining relations</h2>
+
+<p>The relation <em>less than or equal</em> has an infinite number of
+instances.  Here are a few of them:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>0 ≤ 0     0 ≤ 1     0 ≤ 2     0 ≤ 3     ...
+          1 ≤ 1     1 ≤ 2     1 ≤ 3     ...
+                    2 ≤ 2     2 ≤ 3     ...
+                              3 ≤ 3     ...
+                                        ...
+</code></pre></div></div>
+
+<p>And yet, we can write a finite definition that encompasses
+all of these instances in just a few lines.  Here is the
+definition as a pair of inference rules:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>z≤n --------
+    zero ≤ n
+
+    m ≤ n
+s≤s -------------
+    suc m ≤ suc n
+</code></pre></div></div>
+
+<p>And here is the definition in Agda:</p>
+<pre class="Agda"><a id="1409" class="Keyword">data</a> <a id="_≤_"></a><a id="1414" href="/Relations/#1414" class="Datatype Operator">_≤_</a> <a id="1418" class="Symbol">:</a> <a id="1420" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a> <a id="1422" class="Symbol">→</a> <a id="1424" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a> <a id="1426" class="Symbol">→</a> <a id="1428" class="PrimitiveType">Set</a> <a id="1432" class="Keyword">where</a>
+
+  <a id="_≤_.z≤n"></a><a id="1441" href="/Relations/#1441" class="InductiveConstructor">z≤n</a> <a id="1445" class="Symbol">:</a> <a id="1447" class="Symbol">∀</a> <a id="1449" class="Symbol">{</a><a id="1450" href="/Relations/#1450" class="Bound">n</a> <a id="1452" class="Symbol">:</a> <a id="1454" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="1455" class="Symbol">}</a>
+      <a id="1463" class="Comment">--------</a>
+    <a id="1476" class="Symbol">→</a> <a id="1478" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#115" class="InductiveConstructor">zero</a> <a id="1483" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="1485" href="/Relations/#1450" class="Bound">n</a>
+
+  <a id="_≤_.s≤s"></a><a id="1490" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="1494" class="Symbol">:</a> <a id="1496" class="Symbol">∀</a> <a id="1498" class="Symbol">{</a><a id="1499" href="/Relations/#1499" class="Bound">m</a> <a id="1501" href="/Relations/#1501" class="Bound">n</a> <a id="1503" class="Symbol">:</a> <a id="1505" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="1506" class="Symbol">}</a>
+    <a id="1512" class="Symbol">→</a> <a id="1514" href="/Relations/#1499" class="Bound">m</a> <a id="1516" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="1518" href="/Relations/#1501" class="Bound">n</a>
+      <a id="1526" class="Comment">-------------</a>
+    <a id="1544" class="Symbol">→</a> <a id="1546" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="1550" href="/Relations/#1499" class="Bound">m</a> <a id="1552" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="1554" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="1558" href="/Relations/#1501" class="Bound">n</a></pre>
+<p>Here <code class="highlighter-rouge">z≤n</code> and <code class="highlighter-rouge">s≤s</code> (with no spaces) are constructor names, while
+<code class="highlighter-rouge">zero ≤ n</code>, and <code class="highlighter-rouge">m ≤ n</code> and <code class="highlighter-rouge">suc m ≤ suc n</code> (with spaces) are types.
+This is our first use of an <em>indexed</em> datatype, where the type <code class="highlighter-rouge">m ≤ n</code>
+is indexed by two naturals, <code class="highlighter-rouge">m</code> and <code class="highlighter-rouge">n</code>.  In Agda any line beginning
+with two or more dashes is a comment, and here we have exploited that
+convention to write our Agda code in a form that resembles the
+corresponding inference rules, a trick we will use often from now on.</p>
+
+<p>Both definitions above tell us the same two things:</p>
+
+<ul>
+  <li><em>Base case</em>: for all naturals <code class="highlighter-rouge">n</code>, the proposition <code class="highlighter-rouge">zero ≤ n</code> holds.</li>
+  <li><em>Inductive case</em>: for all naturals <code class="highlighter-rouge">m</code> and <code class="highlighter-rouge">n</code>, if the proposition
+<code class="highlighter-rouge">m ≤ n</code> holds, then the proposition <code class="highlighter-rouge">suc m ≤ suc n</code> holds.</li>
+</ul>
+
+<p>In fact, they each give us a bit more detail:</p>
+
+<ul>
+  <li><em>Base case</em>: for all naturals <code class="highlighter-rouge">n</code>, the constructor <code class="highlighter-rouge">z≤n</code>
+produces evidence that <code class="highlighter-rouge">zero ≤ n</code> holds.</li>
+  <li><em>Inductive case</em>: for all naturals <code class="highlighter-rouge">m</code> and <code class="highlighter-rouge">n</code>, the constructor
+<code class="highlighter-rouge">s≤s</code> takes evidence that <code class="highlighter-rouge">m ≤ n</code> holds into evidence that
+<code class="highlighter-rouge">suc m ≤ suc n</code> holds.</li>
+</ul>
+
+<p>For example, here in inference rule notation is the proof that
+<code class="highlighter-rouge">2 ≤ 4</code>:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  z≤n -----
+      0 ≤ 2
+ s≤s -------
+      1 ≤ 3
+s≤s ---------
+      2 ≤ 4
+</code></pre></div></div>
+
+<p>And here is the corresponding Agda proof:</p>
+<pre class="Agda"><a id="2836" href="/Relations/#2836" class="Function">_</a> <a id="2838" class="Symbol">:</a> <a id="2840" class="Number">2</a> <a id="2842" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="2844" class="Number">4</a>
+<a id="2846" class="Symbol">_</a> <a id="2848" class="Symbol">=</a> <a id="2850" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="2854" class="Symbol">(</a><a id="2855" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="2859" href="/Relations/#1441" class="InductiveConstructor">z≤n</a><a id="2862" class="Symbol">)</a></pre>
+
+<h2 id="implicit-arguments">Implicit arguments</h2>
+
+<p>This is our first use of implicit arguments.  In the definition of
+inequality, the two lines defining the constructors use <code class="highlighter-rouge">∀</code>, very
+similar to our use of <code class="highlighter-rouge">∀</code> in propositions such as:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>+-comm : ∀ (m n : ℕ) → m + n ≡ n + m
+</code></pre></div></div>
+
+<p>However, here the declarations are surrounded by curly braces <code class="highlighter-rouge">{ }</code>
+rather than parentheses <code class="highlighter-rouge">( )</code>.  This means that the arguments are
+<em>implicit</em> and need not be written explicitly; instead, they are
+<em>inferred</em> by Agda’s typechecker. Thus, we write <code class="highlighter-rouge">+-comm m n</code> for the
+proof that <code class="highlighter-rouge">m + n ≡ n + m</code>, but <code class="highlighter-rouge">z≤n</code> for the proof that <code class="highlighter-rouge">zero ≤ n</code>,
+leaving <code class="highlighter-rouge">n</code> implicit.  Similarly, if <code class="highlighter-rouge">m≤n</code> is evidence that <code class="highlighter-rouge">m ≤ n</code>,
+we write <code class="highlighter-rouge">s≤s m≤n</code> for evidence that <code class="highlighter-rouge">suc m ≤ suc n</code>, leaving both <code class="highlighter-rouge">m</code>
+and <code class="highlighter-rouge">n</code> implicit.</p>
+
+<p>If we wish, it is possible to provide implicit arguments explicitly by
+writing the arguments inside curly braces.  For instance, here is the
+Agda proof that <code class="highlighter-rouge">2 ≤ 4</code> repeated, with the implicit arguments made
+explicit:</p>
+<pre class="Agda"><a id="3857" href="/Relations/#3857" class="Function">_</a> <a id="3859" class="Symbol">:</a> <a id="3861" class="Number">2</a> <a id="3863" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="3865" class="Number">4</a>
+<a id="3867" class="Symbol">_</a> <a id="3869" class="Symbol">=</a> <a id="3871" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="3875" class="Symbol">{</a><a id="3876" class="Number">1</a><a id="3877" class="Symbol">}</a> <a id="3879" class="Symbol">{</a><a id="3880" class="Number">3</a><a id="3881" class="Symbol">}</a> <a id="3883" class="Symbol">(</a><a id="3884" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="3888" class="Symbol">{</a><a id="3889" class="Number">0</a><a id="3890" class="Symbol">}</a> <a id="3892" class="Symbol">{</a><a id="3893" class="Number">2</a><a id="3894" class="Symbol">}</a> <a id="3896" class="Symbol">(</a><a id="3897" href="/Relations/#1441" class="InductiveConstructor">z≤n</a> <a id="3901" class="Symbol">{</a><a id="3902" class="Number">2</a><a id="3903" class="Symbol">}))</a></pre>
+<p>One may also identify implicit arguments by name:</p>
+<pre class="Agda"><a id="3981" href="/Relations/#3981" class="Function">_</a> <a id="3983" class="Symbol">:</a> <a id="3985" class="Number">2</a> <a id="3987" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="3989" class="Number">4</a>
+<a id="3991" class="Symbol">_</a> <a id="3993" class="Symbol">=</a> <a id="3995" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="3999" class="Symbol">{</a><a id="4000" class="Argument">m</a> <a id="4002" class="Symbol">=</a> <a id="4004" class="Number">1</a><a id="4005" class="Symbol">}</a> <a id="4007" class="Symbol">{</a><a id="4008" class="Argument">n</a> <a id="4010" class="Symbol">=</a> <a id="4012" class="Number">3</a><a id="4013" class="Symbol">}</a> <a id="4015" class="Symbol">(</a><a id="4016" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="4020" class="Symbol">{</a><a id="4021" class="Argument">m</a> <a id="4023" class="Symbol">=</a> <a id="4025" class="Number">0</a><a id="4026" class="Symbol">}</a> <a id="4028" class="Symbol">{</a><a id="4029" class="Argument">n</a> <a id="4031" class="Symbol">=</a> <a id="4033" class="Number">2</a><a id="4034" class="Symbol">}</a> <a id="4036" class="Symbol">(</a><a id="4037" href="/Relations/#1441" class="InductiveConstructor">z≤n</a> <a id="4041" class="Symbol">{</a><a id="4042" class="Argument">n</a> <a id="4044" class="Symbol">=</a> <a id="4046" class="Number">2</a><a id="4047" class="Symbol">}))</a></pre>
+<p>In the latter format, you may only supply some implicit arguments:</p>
+<pre class="Agda"><a id="4142" href="/Relations/#4142" class="Function">_</a> <a id="4144" class="Symbol">:</a> <a id="4146" class="Number">2</a> <a id="4148" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="4150" class="Number">4</a>
+<a id="4152" class="Symbol">_</a> <a id="4154" class="Symbol">=</a> <a id="4156" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="4160" class="Symbol">{</a><a id="4161" class="Argument">n</a> <a id="4163" class="Symbol">=</a> <a id="4165" class="Number">3</a><a id="4166" class="Symbol">}</a> <a id="4168" class="Symbol">(</a><a id="4169" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="4173" class="Symbol">{</a><a id="4174" class="Argument">n</a> <a id="4176" class="Symbol">=</a> <a id="4178" class="Number">2</a><a id="4179" class="Symbol">}</a> <a id="4181" href="/Relations/#1441" class="InductiveConstructor">z≤n</a><a id="4184" class="Symbol">)</a></pre>
+<p>It is not permitted to swap implicit arguments, even when named.</p>
+
+<h2 id="precedence">Precedence</h2>
+
+<p>We declare the precedence for comparison as follows:</p>
+<pre class="Agda"><a id="4345" class="Keyword">infix</a> <a id="4351" class="Number">4</a> <a id="4353" href="/Relations/#1414" class="Datatype Operator">_≤_</a></pre>
+<p>We set the precedence of <code class="highlighter-rouge">_≤_</code> at level 4, so it binds less tightly
+that <code class="highlighter-rouge">_+_</code> at level 6 and hence <code class="highlighter-rouge">1 + 2 ≤ 3</code> parses as <code class="highlighter-rouge">(1 + 2) ≤ 3</code>.
+We write <code class="highlighter-rouge">infix</code> to indicate that the operator does not associate to
+either the left or right, as it makes no sense to parse <code class="highlighter-rouge">1 ≤ 2 ≤ 3</code> as
+either <code class="highlighter-rouge">(1 ≤ 2) ≤ 3</code> or <code class="highlighter-rouge">1 ≤ (2 ≤ 3)</code>.</p>
+
+<h2 id="decidability">Decidability</h2>
+
+<p>Given two numbers, it is straightforward to compute whether or not the
+first is less than or equal to the second.  We don’t give the code for
+doing so here, but will return to this point in
+Chapter <a href="/Decidable/">Decidable</a>.</p>
+
+<h2 id="properties-of-ordering-relations">Properties of ordering relations</h2>
+
+<p>Relations pop up all the time, and mathematicians have agreed
+on names for some of the most common properties.</p>
+
+<ul>
+  <li><em>Reflexive</em>. For all <code class="highlighter-rouge">n</code>, the relation <code class="highlighter-rouge">n ≤ n</code> holds.</li>
+  <li><em>Transitive</em>. For all <code class="highlighter-rouge">m</code>, <code class="highlighter-rouge">n</code>, and <code class="highlighter-rouge">p</code>, if <code class="highlighter-rouge">m ≤ n</code> and
+<code class="highlighter-rouge">n ≤ p</code> hold, then <code class="highlighter-rouge">m ≤ p</code> holds.</li>
+  <li><em>Anti-symmetric</em>. For all <code class="highlighter-rouge">m</code> and <code class="highlighter-rouge">n</code>, if both <code class="highlighter-rouge">m ≤ n</code> and
+<code class="highlighter-rouge">n ≤ m</code> hold, then <code class="highlighter-rouge">m ≡ n</code> holds.</li>
+  <li><em>Total</em>. For all <code class="highlighter-rouge">m</code> and <code class="highlighter-rouge">n</code>, either <code class="highlighter-rouge">m ≤ n</code> or <code class="highlighter-rouge">n ≤ m</code>
+holds.</li>
+</ul>
+
+<p>The relation <code class="highlighter-rouge">_≤_</code> satisfies all four of these properties.</p>
+
+<p>There are also names for some combinations of these properties.</p>
+
+<ul>
+  <li><em>Preorder</em>. Any relation that is reflexive and transitive.</li>
+  <li><em>Partial order</em>. Any preorder that is also anti-symmetric.</li>
+  <li><em>Total order</em>. Any partial order that is also total.</li>
+</ul>
+
+<p>If you ever bump into a relation at a party, you now know how
+to make small talk, by asking it whether it is reflexive, transitive,
+anti-symmetric, and total. Or instead you might ask whether it is a
+preorder, partial order, or total order.</p>
+
+<p>Less frivolously, if you ever bump into a relation while reading a
+technical paper, this gives you a way to orient yourself, by checking
+whether or not it is a preorder, partial order, or total order.  A
+careful author will often call out these properties—or their
+lack—for instance by saying that a newly introduced relation is a
+partial order but not a total order.</p>
+
+<h4 id="orderings">Exercise <code class="highlighter-rouge">orderings</code></h4>
+
+<p>Give an example of a preorder that is not a partial order.</p>
+
+<p>Give an example of a partial order that is not a total order.</p>
+
+<h2 id="reflexivity">Reflexivity</h2>
+
+<p>The first property to prove about comparison is that it is reflexive:
+for any natural <code class="highlighter-rouge">n</code>, the relation <code class="highlighter-rouge">n ≤ n</code> holds.  We follow the
+convention in the standard library and make the argument implicit,
+as that will make it easier to invoke reflexivity:</p>
+<pre class="Agda"><a id="≤-refl"></a><a id="6754" href="/Relations/#6754" class="Function">≤-refl</a> <a id="6761" class="Symbol">:</a> <a id="6763" class="Symbol">∀</a> <a id="6765" class="Symbol">{</a><a id="6766" href="/Relations/#6766" class="Bound">n</a> <a id="6768" class="Symbol">:</a> <a id="6770" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="6771" class="Symbol">}</a>
+    <a id="6777" class="Comment">-----</a>
+  <a id="6785" class="Symbol">→</a> <a id="6787" href="/Relations/#6766" class="Bound">n</a> <a id="6789" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="6791" href="/Relations/#6766" class="Bound">n</a>
+<a id="6793" href="/Relations/#6754" class="Function">≤-refl</a> <a id="6800" class="Symbol">{</a><a id="6801" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#115" class="InductiveConstructor">zero</a><a id="6805" class="Symbol">}</a>   <a id="6809" class="Symbol">=</a>  <a id="6812" href="/Relations/#1441" class="InductiveConstructor">z≤n</a>
+<a id="6816" href="/Relations/#6754" class="Function">≤-refl</a> <a id="6823" class="Symbol">{</a><a id="6824" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="6828" href="/Relations/#6828" class="Bound">n</a><a id="6829" class="Symbol">}</a>  <a id="6832" class="Symbol">=</a>  <a id="6835" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="6839" class="Symbol">(</a><a id="6840" href="/Relations/#6754" class="Function">≤-refl</a> <a id="6847" class="Symbol">{</a><a id="6848" href="/Relations/#6828" class="Bound">n</a><a id="6849" class="Symbol">})</a></pre>
+<p>The proof is a straightforward induction on the implicit argument <code class="highlighter-rouge">n</code>.
+In the base case, <code class="highlighter-rouge">zero ≤ zero</code> holds by <code class="highlighter-rouge">z≤n</code>.  In the inductive
+case, the inductive hypothesis <code class="highlighter-rouge">≤-refl {n}</code> gives us a proof of <code class="highlighter-rouge">n ≤
+n</code>, and applying <code class="highlighter-rouge">s≤s</code> to that yields a proof of <code class="highlighter-rouge">suc n ≤ suc n</code>.</p>
+
+<p>It is a good exercise to prove reflexivity interactively in Emacs,
+using holes and the <code class="highlighter-rouge">C-c C-c</code>, <code class="highlighter-rouge">C-c C-,</code>, and <code class="highlighter-rouge">C-c C-r</code> commands.</p>
+
+<h2 id="transitivity">Transitivity</h2>
+
+<p>The second property to prove about comparison is that it is
+transitive: for any naturals <code class="highlighter-rouge">m</code>, <code class="highlighter-rouge">n</code>, and <code class="highlighter-rouge">p</code>, if <code class="highlighter-rouge">m ≤ n</code> and <code class="highlighter-rouge">n ≤ p</code>
+hold, then <code class="highlighter-rouge">m ≤ p</code> holds.  Again, <code class="highlighter-rouge">m</code>, <code class="highlighter-rouge">n</code>, and <code class="highlighter-rouge">p</code> are implicit:</p>
+<pre class="Agda"><a id="≤-trans"></a><a id="7498" href="/Relations/#7498" class="Function">≤-trans</a> <a id="7506" class="Symbol">:</a> <a id="7508" class="Symbol">∀</a> <a id="7510" class="Symbol">{</a><a id="7511" href="/Relations/#7511" class="Bound">m</a> <a id="7513" href="/Relations/#7513" class="Bound">n</a> <a id="7515" href="/Relations/#7515" class="Bound">p</a> <a id="7517" class="Symbol">:</a> <a id="7519" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="7520" class="Symbol">}</a>
+  <a id="7524" class="Symbol">→</a> <a id="7526" href="/Relations/#7511" class="Bound">m</a> <a id="7528" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="7530" href="/Relations/#7513" class="Bound">n</a>
+  <a id="7534" class="Symbol">→</a> <a id="7536" href="/Relations/#7513" class="Bound">n</a> <a id="7538" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="7540" href="/Relations/#7515" class="Bound">p</a>
+    <a id="7546" class="Comment">-----</a>
+  <a id="7554" class="Symbol">→</a> <a id="7556" href="/Relations/#7511" class="Bound">m</a> <a id="7558" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="7560" href="/Relations/#7515" class="Bound">p</a>
+<a id="7562" href="/Relations/#7498" class="Function">≤-trans</a> <a id="7570" href="/Relations/#1441" class="InductiveConstructor">z≤n</a>       <a id="7580" class="Symbol">_</a>          <a id="7591" class="Symbol">=</a>  <a id="7594" href="/Relations/#1441" class="InductiveConstructor">z≤n</a>
+<a id="7598" href="/Relations/#7498" class="Function">≤-trans</a> <a id="7606" class="Symbol">(</a><a id="7607" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="7611" href="/Relations/#7611" class="Bound">m≤n</a><a id="7614" class="Symbol">)</a> <a id="7616" class="Symbol">(</a><a id="7617" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="7621" href="/Relations/#7621" class="Bound">n≤p</a><a id="7624" class="Symbol">)</a>  <a id="7627" class="Symbol">=</a>  <a id="7630" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="7634" class="Symbol">(</a><a id="7635" href="/Relations/#7498" class="Function">≤-trans</a> <a id="7643" href="/Relations/#7611" class="Bound">m≤n</a> <a id="7647" href="/Relations/#7621" class="Bound">n≤p</a><a id="7650" class="Symbol">)</a></pre>
+<p>Here the proof is by induction on the <em>evidence</em> that <code class="highlighter-rouge">m ≤ n</code>.  In the
+base case, the first inequality holds by <code class="highlighter-rouge">z≤n</code> and must show <code class="highlighter-rouge">zero ≤
+p</code>, which follows immediately by <code class="highlighter-rouge">z≤n</code>.  In this case, the fact that
+<code class="highlighter-rouge">n ≤ p</code> is irrelevant, and we write <code class="highlighter-rouge">_</code> as the pattern to indicate
+that the corresponding evidence is unused.</p>
+
+<p>In the inductive case, the first inequality holds by <code class="highlighter-rouge">s≤s m≤n</code>
+and the second inequality by <code class="highlighter-rouge">s≤s n≤p</code>, and so we are given
+<code class="highlighter-rouge">suc m ≤ suc n</code> and <code class="highlighter-rouge">suc n ≤ suc p</code>, and must show <code class="highlighter-rouge">suc m ≤ suc p</code>.
+The inductive hypothesis <code class="highlighter-rouge">≤-trans m≤n n≤p</code> establishes
+that <code class="highlighter-rouge">m ≤ p</code>, and our goal follows by applying <code class="highlighter-rouge">s≤s</code>.</p>
+
+<p>The case <code class="highlighter-rouge">≤-trans (s≤s m≤n) z≤n</code> cannot arise, since the first
+inequality implies the middle value is <code class="highlighter-rouge">suc n</code> while the second
+inequality implies that it is <code class="highlighter-rouge">zero</code>.  Agda can determine that such a
+case cannot arise, and does not require (or permit) it to be listed.</p>
+
+<p>Alternatively, we could make the implicit parameters explicit:</p>
+<pre class="Agda"><a id="≤-trans′"></a><a id="8627" href="/Relations/#8627" class="Function">≤-trans′</a> <a id="8636" class="Symbol">:</a> <a id="8638" class="Symbol">∀</a> <a id="8640" class="Symbol">(</a><a id="8641" href="/Relations/#8641" class="Bound">m</a> <a id="8643" href="/Relations/#8643" class="Bound">n</a> <a id="8645" href="/Relations/#8645" class="Bound">p</a> <a id="8647" class="Symbol">:</a> <a id="8649" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="8650" class="Symbol">)</a>
+  <a id="8654" class="Symbol">→</a> <a id="8656" href="/Relations/#8641" class="Bound">m</a> <a id="8658" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="8660" href="/Relations/#8643" class="Bound">n</a>
+  <a id="8664" class="Symbol">→</a> <a id="8666" href="/Relations/#8643" class="Bound">n</a> <a id="8668" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="8670" href="/Relations/#8645" class="Bound">p</a>
+    <a id="8676" class="Comment">-----</a>
+  <a id="8684" class="Symbol">→</a> <a id="8686" href="/Relations/#8641" class="Bound">m</a> <a id="8688" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="8690" href="/Relations/#8645" class="Bound">p</a>
+<a id="8692" href="/Relations/#8627" class="Function">≤-trans′</a> <a id="8701" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#115" class="InductiveConstructor">zero</a>    <a id="8709" class="Symbol">_</a>       <a id="8717" class="Symbol">_</a>       <a id="8725" href="/Relations/#1441" class="InductiveConstructor">z≤n</a>       <a id="8735" class="Symbol">_</a>          <a id="8746" class="Symbol">=</a>  <a id="8749" href="/Relations/#1441" class="InductiveConstructor">z≤n</a>
+<a id="8753" href="/Relations/#8627" class="Function">≤-trans′</a> <a id="8762" class="Symbol">(</a><a id="8763" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="8767" href="/Relations/#8767" class="Bound">m</a><a id="8768" class="Symbol">)</a> <a id="8770" class="Symbol">(</a><a id="8771" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="8775" href="/Relations/#8775" class="Bound">n</a><a id="8776" class="Symbol">)</a> <a id="8778" class="Symbol">(</a><a id="8779" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="8783" href="/Relations/#8783" class="Bound">p</a><a id="8784" class="Symbol">)</a> <a id="8786" class="Symbol">(</a><a id="8787" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="8791" href="/Relations/#8791" class="Bound">m≤n</a><a id="8794" class="Symbol">)</a> <a id="8796" class="Symbol">(</a><a id="8797" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="8801" href="/Relations/#8801" class="Bound">n≤p</a><a id="8804" class="Symbol">)</a>  <a id="8807" class="Symbol">=</a>  <a id="8810" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="8814" class="Symbol">(</a><a id="8815" href="/Relations/#8627" class="Function">≤-trans′</a> <a id="8824" href="/Relations/#8767" class="Bound">m</a> <a id="8826" href="/Relations/#8775" class="Bound">n</a> <a id="8828" href="/Relations/#8783" class="Bound">p</a> <a id="8830" href="/Relations/#8791" class="Bound">m≤n</a> <a id="8834" href="/Relations/#8801" class="Bound">n≤p</a><a id="8837" class="Symbol">)</a></pre>
+<p>One might argue that this is clearer or one might argue that the extra
+length obscures the essence of the proof.  We will usually opt for
+shorter proofs.</p>
+
+<p>The technique of induction on evidence that a property holds (e.g.,
+inducting on evidence that <code class="highlighter-rouge">m ≤ n</code>)—rather than induction on 
+values of which the property holds (e.g., inducting on <code class="highlighter-rouge">m</code>)—will turn
+out to be immensely valuable, and one that we use often.</p>
+
+<p>Again, it is a good exercise to prove transitivity interactively in Emacs,
+using holes and the <code class="highlighter-rouge">C-c C-c</code>, <code class="highlighter-rouge">C-c C-,</code>, and <code class="highlighter-rouge">C-c C-r</code> commands.</p>
+
+<h2 id="anti-symmetry">Anti-symmetry</h2>
+
+<p>The third property to prove about comparison is that it is
+antisymmetric: for all naturals <code class="highlighter-rouge">m</code> and <code class="highlighter-rouge">n</code>, if both <code class="highlighter-rouge">m ≤ n</code> and <code class="highlighter-rouge">n ≤
+m</code> hold, then <code class="highlighter-rouge">m ≡ n</code> holds:</p>
+<pre class="Agda"><a id="≤-antisym"></a><a id="9599" href="/Relations/#9599" class="Function">≤-antisym</a> <a id="9609" class="Symbol">:</a> <a id="9611" class="Symbol">∀</a> <a id="9613" class="Symbol">{</a><a id="9614" href="/Relations/#9614" class="Bound">m</a> <a id="9616" href="/Relations/#9616" class="Bound">n</a> <a id="9618" class="Symbol">:</a> <a id="9620" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="9621" class="Symbol">}</a>
+  <a id="9625" class="Symbol">→</a> <a id="9627" href="/Relations/#9614" class="Bound">m</a> <a id="9629" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="9631" href="/Relations/#9616" class="Bound">n</a>
+  <a id="9635" class="Symbol">→</a> <a id="9637" href="/Relations/#9616" class="Bound">n</a> <a id="9639" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="9641" href="/Relations/#9614" class="Bound">m</a>
+    <a id="9647" class="Comment">-----</a>
+  <a id="9655" class="Symbol">→</a> <a id="9657" href="/Relations/#9614" class="Bound">m</a> <a id="9659" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#83" class="Datatype Operator">≡</a> <a id="9661" href="/Relations/#9616" class="Bound">n</a>
+<a id="9663" href="/Relations/#9599" class="Function">≤-antisym</a> <a id="9673" href="/Relations/#1441" class="InductiveConstructor">z≤n</a>       <a id="9683" href="/Relations/#1441" class="InductiveConstructor">z≤n</a>        <a id="9694" class="Symbol">=</a>  <a id="9697" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a>
+<a id="9702" href="/Relations/#9599" class="Function">≤-antisym</a> <a id="9712" class="Symbol">(</a><a id="9713" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="9717" href="/Relations/#9717" class="Bound">m≤n</a><a id="9720" class="Symbol">)</a> <a id="9722" class="Symbol">(</a><a id="9723" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="9727" href="/Relations/#9727" class="Bound">n≤m</a><a id="9730" class="Symbol">)</a>  <a id="9733" class="Symbol">=</a>  <a id="9736" href="https://agda.github.io/agda-stdlib/Relation.Binary.PropositionalEquality.html#1170" class="Function">cong</a> <a id="9741" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="9745" class="Symbol">(</a><a id="9746" href="/Relations/#9599" class="Function">≤-antisym</a> <a id="9756" href="/Relations/#9717" class="Bound">m≤n</a> <a id="9760" href="/Relations/#9727" class="Bound">n≤m</a><a id="9763" class="Symbol">)</a></pre>
+<p>Again, the proof is by induction over the evidence that <code class="highlighter-rouge">m ≤ n</code>
+and <code class="highlighter-rouge">n ≤ m</code> hold.</p>
+
+<p>In the base case, both inequalities hold by <code class="highlighter-rouge">z≤n</code>, and so we are given
+<code class="highlighter-rouge">zero ≤ zero</code> and <code class="highlighter-rouge">zero ≤ zero</code> and must show <code class="highlighter-rouge">zero ≡ zero</code>, which
+follows by reflexivity.  (Reflexivity of equality, that is, not
+reflexivity of inequality.)</p>
+
+<p>In the inductive case, the first inequality holds by <code class="highlighter-rouge">s≤s m≤n</code> and the
+second inequality holds by <code class="highlighter-rouge">s≤s n≤m</code>, and so we are given <code class="highlighter-rouge">suc m ≤ suc n</code>
+and <code class="highlighter-rouge">suc n ≤ suc m</code> and must show <code class="highlighter-rouge">suc m ≡ suc n</code>.  The inductive
+hypothesis <code class="highlighter-rouge">≤-antisym m≤n n≤m</code> establishes that <code class="highlighter-rouge">m ≡ n</code>, and our goal
+follows by congruence.</p>
+
+<h4 id="leq-antisym-cases">Exercise <code class="highlighter-rouge">≤-antisym-cases</code></h4>
+
+<p>The above proof omits cases where one argument is <code class="highlighter-rouge">z≤n</code> and one
+argument is <code class="highlighter-rouge">s≤s</code>.  Why is it ok to omit them?</p>
+
+<h2 id="total">Total</h2>
+
+<p>The fourth property to prove about comparison is that it is total:
+for any naturals <code class="highlighter-rouge">m</code> and <code class="highlighter-rouge">n</code> either <code class="highlighter-rouge">m ≤ n</code> or <code class="highlighter-rouge">n ≤ m</code>, or both if
+<code class="highlighter-rouge">m</code> and <code class="highlighter-rouge">n</code> are equal.</p>
+
+<p>We specify what it means for inequality to be total:</p>
+<pre class="Agda"><a id="10797" class="Keyword">data</a> <a id="Total"></a><a id="10802" href="/Relations/#10802" class="Datatype">Total</a> <a id="10808" class="Symbol">(</a><a id="10809" href="/Relations/#10809" class="Bound">m</a> <a id="10811" href="/Relations/#10811" class="Bound">n</a> <a id="10813" class="Symbol">:</a> <a id="10815" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="10816" class="Symbol">)</a> <a id="10818" class="Symbol">:</a> <a id="10820" class="PrimitiveType">Set</a> <a id="10824" class="Keyword">where</a>
+
+  <a id="Total.forward"></a><a id="10833" href="/Relations/#10833" class="InductiveConstructor">forward</a> <a id="10841" class="Symbol">:</a>
+      <a id="10849" href="/Relations/#10809" class="Bound">m</a> <a id="10851" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="10853" href="/Relations/#10811" class="Bound">n</a>
+      <a id="10861" class="Comment">---------</a>
+    <a id="10875" class="Symbol">→</a> <a id="10877" href="/Relations/#10802" class="Datatype">Total</a> <a id="10883" href="/Relations/#10809" class="Bound">m</a> <a id="10885" href="/Relations/#10811" class="Bound">n</a>
+
+  <a id="Total.flipped"></a><a id="10890" href="/Relations/#10890" class="InductiveConstructor">flipped</a> <a id="10898" class="Symbol">:</a>
+      <a id="10906" href="/Relations/#10811" class="Bound">n</a> <a id="10908" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="10910" href="/Relations/#10809" class="Bound">m</a>
+      <a id="10918" class="Comment">---------</a>
+    <a id="10932" class="Symbol">→</a> <a id="10934" href="/Relations/#10802" class="Datatype">Total</a> <a id="10940" href="/Relations/#10809" class="Bound">m</a> <a id="10942" href="/Relations/#10811" class="Bound">n</a></pre>
+<p>Evidence that <code class="highlighter-rouge">Total m n</code> holds is either of the form
+<code class="highlighter-rouge">forward m≤n</code> or <code class="highlighter-rouge">flipped n≤m</code>, where <code class="highlighter-rouge">m≤n</code> and <code class="highlighter-rouge">n≤m</code> are
+evidence of <code class="highlighter-rouge">m ≤ n</code> and <code class="highlighter-rouge">n ≤ m</code> respectively.</p>
+
+<p>(For those familiar with logic, the above definition
+could also be written as a disjunction. Disjunctions will
+be introduced in Chapter <a href="/Connectives/">Connectives</a>.)</p>
+
+<p>This is our first use of a datatype with <em>parameters</em>,
+in this case <code class="highlighter-rouge">m</code> and <code class="highlighter-rouge">n</code>.  It is equivalent to the following
+indexed datatype:</p>
+<pre class="Agda"><a id="11432" class="Keyword">data</a> <a id="Total′"></a><a id="11437" href="/Relations/#11437" class="Datatype">Total′</a> <a id="11444" class="Symbol">:</a> <a id="11446" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a> <a id="11448" class="Symbol">→</a> <a id="11450" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a> <a id="11452" class="Symbol">→</a> <a id="11454" class="PrimitiveType">Set</a> <a id="11458" class="Keyword">where</a>
+
+  <a id="Total′.forward′"></a><a id="11467" href="/Relations/#11467" class="InductiveConstructor">forward′</a> <a id="11476" class="Symbol">:</a> <a id="11478" class="Symbol">∀</a> <a id="11480" class="Symbol">{</a><a id="11481" href="/Relations/#11481" class="Bound">m</a> <a id="11483" href="/Relations/#11483" class="Bound">n</a> <a id="11485" class="Symbol">:</a> <a id="11487" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="11488" class="Symbol">}</a>
+    <a id="11494" class="Symbol">→</a> <a id="11496" href="/Relations/#11481" class="Bound">m</a> <a id="11498" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="11500" href="/Relations/#11483" class="Bound">n</a>
+      <a id="11508" class="Comment">----------</a>
+    <a id="11523" class="Symbol">→</a> <a id="11525" href="/Relations/#11437" class="Datatype">Total′</a> <a id="11532" href="/Relations/#11481" class="Bound">m</a> <a id="11534" href="/Relations/#11483" class="Bound">n</a>
+
+  <a id="Total′.flipped′"></a><a id="11539" href="/Relations/#11539" class="InductiveConstructor">flipped′</a> <a id="11548" class="Symbol">:</a> <a id="11550" class="Symbol">∀</a> <a id="11552" class="Symbol">{</a><a id="11553" href="/Relations/#11553" class="Bound">m</a> <a id="11555" href="/Relations/#11555" class="Bound">n</a> <a id="11557" class="Symbol">:</a> <a id="11559" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="11560" class="Symbol">}</a>
+    <a id="11566" class="Symbol">→</a> <a id="11568" href="/Relations/#11555" class="Bound">n</a> <a id="11570" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="11572" href="/Relations/#11553" class="Bound">m</a>
+      <a id="11580" class="Comment">----------</a>
+    <a id="11595" class="Symbol">→</a> <a id="11597" href="/Relations/#11437" class="Datatype">Total′</a> <a id="11604" href="/Relations/#11553" class="Bound">m</a> <a id="11606" href="/Relations/#11555" class="Bound">n</a></pre>
+<p>Each parameter of the type translates as an implicit parameter of each
+constructor.  Unlike an indexed datatype, where the indexes can vary
+(as in <code class="highlighter-rouge">zero ≤ n</code> and <code class="highlighter-rouge">suc m ≤ suc n</code>), in a parameterised datatype
+the parameters must always be the same (as in <code class="highlighter-rouge">Total m n</code>).
+Parameterised declarations are shorter, easier to read, and
+occasionally aid Agda’s termination checker, so we will use them in
+preference to indexed types when possible.</p>
+
+<p>With that preliminary out of the way, we specify and prove totality:</p>
+<pre class="Agda"><a id="≤-total"></a><a id="12141" href="/Relations/#12141" class="Function">≤-total</a> <a id="12149" class="Symbol">:</a> <a id="12151" class="Symbol">∀</a> <a id="12153" class="Symbol">(</a><a id="12154" href="/Relations/#12154" class="Bound">m</a> <a id="12156" href="/Relations/#12156" class="Bound">n</a> <a id="12158" class="Symbol">:</a> <a id="12160" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="12161" class="Symbol">)</a> <a id="12163" class="Symbol">→</a> <a id="12165" href="/Relations/#10802" class="Datatype">Total</a> <a id="12171" href="/Relations/#12154" class="Bound">m</a> <a id="12173" href="/Relations/#12156" class="Bound">n</a>
+<a id="12175" href="/Relations/#12141" class="Function">≤-total</a> <a id="12183" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#115" class="InductiveConstructor">zero</a>    <a id="12191" href="/Relations/#12191" class="Bound">n</a>                         <a id="12217" class="Symbol">=</a>  <a id="12220" href="/Relations/#10833" class="InductiveConstructor">forward</a> <a id="12228" href="/Relations/#1441" class="InductiveConstructor">z≤n</a>
+<a id="12232" href="/Relations/#12141" class="Function">≤-total</a> <a id="12240" class="Symbol">(</a><a id="12241" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="12245" href="/Relations/#12245" class="Bound">m</a><a id="12246" class="Symbol">)</a> <a id="12248" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#115" class="InductiveConstructor">zero</a>                      <a id="12274" class="Symbol">=</a>  <a id="12277" href="/Relations/#10890" class="InductiveConstructor">flipped</a> <a id="12285" href="/Relations/#1441" class="InductiveConstructor">z≤n</a>
+<a id="12289" href="/Relations/#12141" class="Function">≤-total</a> <a id="12297" class="Symbol">(</a><a id="12298" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="12302" href="/Relations/#12302" class="Bound">m</a><a id="12303" class="Symbol">)</a> <a id="12305" class="Symbol">(</a><a id="12306" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="12310" href="/Relations/#12310" class="Bound">n</a><a id="12311" class="Symbol">)</a> <a id="12313" class="Keyword">with</a> <a id="12318" href="/Relations/#12141" class="Function">≤-total</a> <a id="12326" href="/Relations/#12302" class="Bound">m</a> <a id="12328" href="/Relations/#12310" class="Bound">n</a>
+<a id="12330" class="Symbol">...</a>                        <a id="12357" class="Symbol">|</a> <a id="12359" href="/Relations/#10833" class="InductiveConstructor">forward</a> <a id="12367" href="/Relations/#12367" class="Bound">m≤n</a>  <a id="12372" class="Symbol">=</a>  <a id="12375" href="/Relations/#10833" class="InductiveConstructor">forward</a> <a id="12383" class="Symbol">(</a><a id="12384" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="12388" href="/Relations/#12367" class="Bound">m≤n</a><a id="12391" class="Symbol">)</a>
+<a id="12393" class="Symbol">...</a>                        <a id="12420" class="Symbol">|</a> <a id="12422" href="/Relations/#10890" class="InductiveConstructor">flipped</a> <a id="12430" href="/Relations/#12430" class="Bound">n≤m</a>  <a id="12435" class="Symbol">=</a>  <a id="12438" href="/Relations/#10890" class="InductiveConstructor">flipped</a> <a id="12446" class="Symbol">(</a><a id="12447" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="12451" href="/Relations/#12430" class="Bound">n≤m</a><a id="12454" class="Symbol">)</a></pre>
+<p>In this case the proof is by induction over both the first
+and second arguments.  We perform a case analysis:</p>
+
+<ul>
+  <li>
+    <p><em>First base case</em>: If the first argument is <code class="highlighter-rouge">zero</code> and the
+second argument is <code class="highlighter-rouge">n</code> then the forward case holds,
+with <code class="highlighter-rouge">z≤n</code> as evidence that <code class="highlighter-rouge">zero ≤ n</code>.</p>
+  </li>
+  <li>
+    <p><em>Second base case</em>: If the first argument is <code class="highlighter-rouge">suc m</code> and the
+second argument is <code class="highlighter-rouge">zero</code> then the flipped case holds, with
+<code class="highlighter-rouge">z≤n</code> as evidence that <code class="highlighter-rouge">zero ≤ suc m</code>.</p>
+  </li>
+  <li>
+    <p><em>Inductive case</em>: If the first argument is <code class="highlighter-rouge">suc m</code> and the
+second argument is <code class="highlighter-rouge">suc n</code>, then the inductive hypothesis
+<code class="highlighter-rouge">≤-total m n</code> establishes one of the following:</p>
+
+    <ul>
+      <li>
+        <p>The forward case of the inductive hypothesis holds with <code class="highlighter-rouge">m≤n</code> as
+evidence that <code class="highlighter-rouge">m ≤ n</code>, from which it follows that the forward case of the
+proposition holds with <code class="highlighter-rouge">s≤s m≤n</code> as evidence that <code class="highlighter-rouge">suc m ≤ suc n</code>.</p>
+      </li>
+      <li>
+        <p>The flipped case of the inductive hypothesis holds with <code class="highlighter-rouge">n≤m</code> as
+evidence that <code class="highlighter-rouge">n ≤ m</code>, from which it follows that the flipped case of the
+proposition holds with <code class="highlighter-rouge">s≤s n≤m</code> as evidence that <code class="highlighter-rouge">suc n ≤ suc m</code>.</p>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<p>This is our first use of the <code class="highlighter-rouge">with</code> clause in Agda.  The keyword
+<code class="highlighter-rouge">with</code> is followed by an expression and one or more subsequent lines.
+Each line begins with an ellipsis (<code class="highlighter-rouge">...</code>) and a vertical bar (<code class="highlighter-rouge">|</code>),
+followed by a pattern to be matched against the expression
+and the right-hand side of the equation.</p>
+
+<p>Every use of <code class="highlighter-rouge">with</code> is equivalent to defining a helper function.  For
+example, the definition above is equivalent to the following:</p>
+<pre class="Agda"><a id="≤-total′"></a><a id="13962" href="/Relations/#13962" class="Function">≤-total′</a> <a id="13971" class="Symbol">:</a> <a id="13973" class="Symbol">∀</a> <a id="13975" class="Symbol">(</a><a id="13976" href="/Relations/#13976" class="Bound">m</a> <a id="13978" href="/Relations/#13978" class="Bound">n</a> <a id="13980" class="Symbol">:</a> <a id="13982" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="13983" class="Symbol">)</a> <a id="13985" class="Symbol">→</a> <a id="13987" href="/Relations/#10802" class="Datatype">Total</a> <a id="13993" href="/Relations/#13976" class="Bound">m</a> <a id="13995" href="/Relations/#13978" class="Bound">n</a>
+<a id="13997" href="/Relations/#13962" class="Function">≤-total′</a> <a id="14006" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#115" class="InductiveConstructor">zero</a>    <a id="14014" href="/Relations/#14014" class="Bound">n</a>        <a id="14023" class="Symbol">=</a>  <a id="14026" href="/Relations/#10833" class="InductiveConstructor">forward</a> <a id="14034" href="/Relations/#1441" class="InductiveConstructor">z≤n</a>
+<a id="14038" href="/Relations/#13962" class="Function">≤-total′</a> <a id="14047" class="Symbol">(</a><a id="14048" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="14052" href="/Relations/#14052" class="Bound">m</a><a id="14053" class="Symbol">)</a> <a id="14055" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#115" class="InductiveConstructor">zero</a>     <a id="14064" class="Symbol">=</a>  <a id="14067" href="/Relations/#10890" class="InductiveConstructor">flipped</a> <a id="14075" href="/Relations/#1441" class="InductiveConstructor">z≤n</a>
+<a id="14079" href="/Relations/#13962" class="Function">≤-total′</a> <a id="14088" class="Symbol">(</a><a id="14089" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="14093" href="/Relations/#14093" class="Bound">m</a><a id="14094" class="Symbol">)</a> <a id="14096" class="Symbol">(</a><a id="14097" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="14101" href="/Relations/#14101" class="Bound">n</a><a id="14102" class="Symbol">)</a>  <a id="14105" class="Symbol">=</a>  <a id="14108" href="/Relations/#14140" class="Function">helper</a> <a id="14115" class="Symbol">(</a><a id="14116" href="/Relations/#13962" class="Function">≤-total′</a> <a id="14125" href="/Relations/#14093" class="Bound">m</a> <a id="14127" href="/Relations/#14101" class="Bound">n</a><a id="14128" class="Symbol">)</a>
+  <a id="14132" class="Keyword">where</a>
+  <a id="14140" href="/Relations/#14140" class="Function">helper</a> <a id="14147" class="Symbol">:</a> <a id="14149" href="/Relations/#10802" class="Datatype">Total</a> <a id="14155" href="/Relations/#14093" class="Bound">m</a> <a id="14157" href="/Relations/#14101" class="Bound">n</a> <a id="14159" class="Symbol">→</a> <a id="14161" href="/Relations/#10802" class="Datatype">Total</a> <a id="14167" class="Symbol">(</a><a id="14168" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="14172" href="/Relations/#14093" class="Bound">m</a><a id="14173" class="Symbol">)</a> <a id="14175" class="Symbol">(</a><a id="14176" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="14180" href="/Relations/#14101" class="Bound">n</a><a id="14181" class="Symbol">)</a>
+  <a id="14185" href="/Relations/#14140" class="Function">helper</a> <a id="14192" class="Symbol">(</a><a id="14193" href="/Relations/#10833" class="InductiveConstructor">forward</a> <a id="14201" href="/Relations/#14201" class="Bound">m≤n</a><a id="14204" class="Symbol">)</a>  <a id="14207" class="Symbol">=</a>  <a id="14210" href="/Relations/#10833" class="InductiveConstructor">forward</a> <a id="14218" class="Symbol">(</a><a id="14219" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="14223" href="/Relations/#14201" class="Bound">m≤n</a><a id="14226" class="Symbol">)</a>
+  <a id="14230" href="/Relations/#14140" class="Function">helper</a> <a id="14237" class="Symbol">(</a><a id="14238" href="/Relations/#10890" class="InductiveConstructor">flipped</a> <a id="14246" href="/Relations/#14246" class="Bound">n≤m</a><a id="14249" class="Symbol">)</a>  <a id="14252" class="Symbol">=</a>  <a id="14255" href="/Relations/#10890" class="InductiveConstructor">flipped</a> <a id="14263" class="Symbol">(</a><a id="14264" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="14268" href="/Relations/#14246" class="Bound">n≤m</a><a id="14271" class="Symbol">)</a></pre>
+<p>This is also our first use of a <code class="highlighter-rouge">where</code> clause in Agda.  The keyword <code class="highlighter-rouge">where</code> is
+followed by one or more definitions, which must be indented.  Any variables
+bound on the left-hand side of the preceding equation (in this case, <code class="highlighter-rouge">m</code> and
+<code class="highlighter-rouge">n</code>) are in scope within the nested definition, and any identifiers bound in the
+nested definition (in this case, <code class="highlighter-rouge">helper</code>) are in scope in the right-hand side
+of the preceding equation.</p>
+
+<p>If both arguments are equal, then both cases hold and we could return evidence
+of either.  In the code above we return the forward case, but there is a
+variant that returns the flipped case:</p>
+<pre class="Agda"><a id="≤-total″"></a><a id="14909" href="/Relations/#14909" class="Function">≤-total″</a> <a id="14918" class="Symbol">:</a> <a id="14920" class="Symbol">∀</a> <a id="14922" class="Symbol">(</a><a id="14923" href="/Relations/#14923" class="Bound">m</a> <a id="14925" href="/Relations/#14925" class="Bound">n</a> <a id="14927" class="Symbol">:</a> <a id="14929" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="14930" class="Symbol">)</a> <a id="14932" class="Symbol">→</a> <a id="14934" href="/Relations/#10802" class="Datatype">Total</a> <a id="14940" href="/Relations/#14923" class="Bound">m</a> <a id="14942" href="/Relations/#14925" class="Bound">n</a>
+<a id="14944" href="/Relations/#14909" class="Function">≤-total″</a> <a id="14953" href="/Relations/#14953" class="Bound">m</a>       <a id="14961" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#115" class="InductiveConstructor">zero</a>                      <a id="14987" class="Symbol">=</a>  <a id="14990" href="/Relations/#10890" class="InductiveConstructor">flipped</a> <a id="14998" href="/Relations/#1441" class="InductiveConstructor">z≤n</a>
+<a id="15002" href="/Relations/#14909" class="Function">≤-total″</a> <a id="15011" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#115" class="InductiveConstructor">zero</a>    <a id="15019" class="Symbol">(</a><a id="15020" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="15024" href="/Relations/#15024" class="Bound">n</a><a id="15025" class="Symbol">)</a>                   <a id="15045" class="Symbol">=</a>  <a id="15048" href="/Relations/#10833" class="InductiveConstructor">forward</a> <a id="15056" href="/Relations/#1441" class="InductiveConstructor">z≤n</a>
+<a id="15060" href="/Relations/#14909" class="Function">≤-total″</a> <a id="15069" class="Symbol">(</a><a id="15070" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="15074" href="/Relations/#15074" class="Bound">m</a><a id="15075" class="Symbol">)</a> <a id="15077" class="Symbol">(</a><a id="15078" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="15082" href="/Relations/#15082" class="Bound">n</a><a id="15083" class="Symbol">)</a> <a id="15085" class="Keyword">with</a> <a id="15090" href="/Relations/#14909" class="Function">≤-total″</a> <a id="15099" href="/Relations/#15074" class="Bound">m</a> <a id="15101" href="/Relations/#15082" class="Bound">n</a>
+<a id="15103" class="Symbol">...</a>                        <a id="15130" class="Symbol">|</a> <a id="15132" href="/Relations/#10833" class="InductiveConstructor">forward</a> <a id="15140" href="/Relations/#15140" class="Bound">m≤n</a>   <a id="15146" class="Symbol">=</a>  <a id="15149" href="/Relations/#10833" class="InductiveConstructor">forward</a> <a id="15157" class="Symbol">(</a><a id="15158" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="15162" href="/Relations/#15140" class="Bound">m≤n</a><a id="15165" class="Symbol">)</a>
+<a id="15167" class="Symbol">...</a>                        <a id="15194" class="Symbol">|</a> <a id="15196" href="/Relations/#10890" class="InductiveConstructor">flipped</a> <a id="15204" href="/Relations/#15204" class="Bound">n≤m</a>   <a id="15210" class="Symbol">=</a>  <a id="15213" href="/Relations/#10890" class="InductiveConstructor">flipped</a> <a id="15221" class="Symbol">(</a><a id="15222" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="15226" href="/Relations/#15204" class="Bound">n≤m</a><a id="15229" class="Symbol">)</a></pre>
+<p>It differs from the original code in that it pattern
+matches on the second argument before the first argument.</p>
+
+<h2 id="monotonicity">Monotonicity</h2>
+
+<p>If one bumps into both an operator and an ordering at a party, one may ask if
+the operator is <em>monotonic</em> with regard to the ordering.  For example, addition
+is monotonic with regard to inequality, meaning:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>∀ {m n p q : ℕ} → m ≤ n → p ≤ q → m + p ≤ n + q
+</code></pre></div></div>
+
+<p>The proof is straightforward using the techniques we have learned, and is best
+broken into three parts. First, we deal with the special case of showing
+addition is monotonic on the right:</p>
+<pre class="Agda"><a id="+-monoʳ-≤"></a><a id="15834" href="/Relations/#15834" class="Function">+-monoʳ-≤</a> <a id="15844" class="Symbol">:</a> <a id="15846" class="Symbol">∀</a> <a id="15848" class="Symbol">(</a><a id="15849" href="/Relations/#15849" class="Bound">m</a> <a id="15851" href="/Relations/#15851" class="Bound">p</a> <a id="15853" href="/Relations/#15853" class="Bound">q</a> <a id="15855" class="Symbol">:</a> <a id="15857" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="15858" class="Symbol">)</a>
+  <a id="15862" class="Symbol">→</a> <a id="15864" href="/Relations/#15851" class="Bound">p</a> <a id="15866" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="15868" href="/Relations/#15853" class="Bound">q</a>
+    <a id="15874" class="Comment">-------------</a>
+  <a id="15890" class="Symbol">→</a> <a id="15892" href="/Relations/#15849" class="Bound">m</a> <a id="15894" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#230" class="Primitive Operator">+</a> <a id="15896" href="/Relations/#15851" class="Bound">p</a> <a id="15898" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="15900" href="/Relations/#15849" class="Bound">m</a> <a id="15902" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#230" class="Primitive Operator">+</a> <a id="15904" href="/Relations/#15853" class="Bound">q</a>
+<a id="15906" href="/Relations/#15834" class="Function">+-monoʳ-≤</a> <a id="15916" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#115" class="InductiveConstructor">zero</a>    <a id="15924" href="/Relations/#15924" class="Bound">p</a> <a id="15926" href="/Relations/#15926" class="Bound">q</a> <a id="15928" href="/Relations/#15928" class="Bound">p≤q</a>  <a id="15933" class="Symbol">=</a>  <a id="15936" href="/Relations/#15928" class="Bound">p≤q</a>
+<a id="15940" href="/Relations/#15834" class="Function">+-monoʳ-≤</a> <a id="15950" class="Symbol">(</a><a id="15951" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="15955" href="/Relations/#15955" class="Bound">m</a><a id="15956" class="Symbol">)</a> <a id="15958" href="/Relations/#15958" class="Bound">p</a> <a id="15960" href="/Relations/#15960" class="Bound">q</a> <a id="15962" href="/Relations/#15962" class="Bound">p≤q</a>  <a id="15967" class="Symbol">=</a>  <a id="15970" href="/Relations/#1490" class="InductiveConstructor">s≤s</a> <a id="15974" class="Symbol">(</a><a id="15975" href="/Relations/#15834" class="Function">+-monoʳ-≤</a> <a id="15985" href="/Relations/#15955" class="Bound">m</a> <a id="15987" href="/Relations/#15958" class="Bound">p</a> <a id="15989" href="/Relations/#15960" class="Bound">q</a> <a id="15991" href="/Relations/#15962" class="Bound">p≤q</a><a id="15994" class="Symbol">)</a></pre>
+<p>The proof is by induction on the first argument.</p>
+
+<ul>
+  <li>
+    <p><em>Base case</em>: The first argument is <code class="highlighter-rouge">zero</code> in which case
+<code class="highlighter-rouge">zero + p ≤ zero + q</code> simplifies to <code class="highlighter-rouge">p ≤ q</code>, the evidence
+for which is given by the argument <code class="highlighter-rouge">p≤q</code>.</p>
+  </li>
+  <li>
+    <p><em>Inductive case</em>: The first argument is <code class="highlighter-rouge">suc m</code>, in which case
+<code class="highlighter-rouge">suc m + p ≤ suc m + q</code> simplifies to <code class="highlighter-rouge">suc (m + p) ≤ suc (m + q)</code>.
+The inductive hypothesis <code class="highlighter-rouge">+-monoʳ-≤ m p q p≤q</code> establishes that
+<code class="highlighter-rouge">m + p ≤ m + q</code>, and our goal follows by applying <code class="highlighter-rouge">s≤s</code>.</p>
+  </li>
+</ul>
+
+<p>Second, we deal with the special case of showing addition is
+monotonic on the left. This follows from the previous
+result and the commutativity of addition:</p>
+<pre class="Agda"><a id="+-monoˡ-≤"></a><a id="16650" href="/Relations/#16650" class="Function">+-monoˡ-≤</a> <a id="16660" class="Symbol">:</a> <a id="16662" class="Symbol">∀</a> <a id="16664" class="Symbol">(</a><a id="16665" href="/Relations/#16665" class="Bound">m</a> <a id="16667" href="/Relations/#16667" class="Bound">n</a> <a id="16669" href="/Relations/#16669" class="Bound">p</a> <a id="16671" class="Symbol">:</a> <a id="16673" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="16674" class="Symbol">)</a>
+  <a id="16678" class="Symbol">→</a> <a id="16680" href="/Relations/#16665" class="Bound">m</a> <a id="16682" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="16684" href="/Relations/#16667" class="Bound">n</a>
+    <a id="16690" class="Comment">-------------</a>
+  <a id="16706" class="Symbol">→</a> <a id="16708" href="/Relations/#16665" class="Bound">m</a> <a id="16710" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#230" class="Primitive Operator">+</a> <a id="16712" href="/Relations/#16669" class="Bound">p</a> <a id="16714" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="16716" href="/Relations/#16667" class="Bound">n</a> <a id="16718" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#230" class="Primitive Operator">+</a> <a id="16720" href="/Relations/#16669" class="Bound">p</a>
+<a id="16722" href="/Relations/#16650" class="Function">+-monoˡ-≤</a> <a id="16732" href="/Relations/#16732" class="Bound">m</a> <a id="16734" href="/Relations/#16734" class="Bound">n</a> <a id="16736" href="/Relations/#16736" class="Bound">p</a> <a id="16738" href="/Relations/#16738" class="Bound">m≤n</a>  <a id="16743" class="Keyword">rewrite</a> <a id="16751" href="https://agda.github.io/agda-stdlib/Data.Nat.Properties.html#9708" class="Function">+-comm</a> <a id="16758" href="/Relations/#16732" class="Bound">m</a> <a id="16760" href="/Relations/#16736" class="Bound">p</a> <a id="16762" class="Symbol">|</a> <a id="16764" href="https://agda.github.io/agda-stdlib/Data.Nat.Properties.html#9708" class="Function">+-comm</a> <a id="16771" href="/Relations/#16734" class="Bound">n</a> <a id="16773" href="/Relations/#16736" class="Bound">p</a>  <a id="16776" class="Symbol">=</a> <a id="16778" href="/Relations/#15834" class="Function">+-monoʳ-≤</a> <a id="16788" href="/Relations/#16736" class="Bound">p</a> <a id="16790" href="/Relations/#16732" class="Bound">m</a> <a id="16792" href="/Relations/#16734" class="Bound">n</a> <a id="16794" href="/Relations/#16738" class="Bound">m≤n</a></pre>
+<p>Rewriting by <code class="highlighter-rouge">+-comm m p</code> and <code class="highlighter-rouge">+-comm n p</code> converts <code class="highlighter-rouge">m + p ≤ n + p</code> into
+<code class="highlighter-rouge">p + m ≤ p + n</code>, which is proved by invoking <code class="highlighter-rouge">+-monoʳ-≤ p m n m≤n</code>.</p>
+
+<p>Third, we combine the two previous results:</p>
+<pre class="Agda"><a id="+-mono-≤"></a><a id="17008" href="/Relations/#17008" class="Function">+-mono-≤</a> <a id="17017" class="Symbol">:</a> <a id="17019" class="Symbol">∀</a> <a id="17021" class="Symbol">(</a><a id="17022" href="/Relations/#17022" class="Bound">m</a> <a id="17024" href="/Relations/#17024" class="Bound">n</a> <a id="17026" href="/Relations/#17026" class="Bound">p</a> <a id="17028" href="/Relations/#17028" class="Bound">q</a> <a id="17030" class="Symbol">:</a> <a id="17032" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="17033" class="Symbol">)</a>
+  <a id="17037" class="Symbol">→</a> <a id="17039" href="/Relations/#17022" class="Bound">m</a> <a id="17041" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="17043" href="/Relations/#17024" class="Bound">n</a>
+  <a id="17047" class="Symbol">→</a> <a id="17049" href="/Relations/#17026" class="Bound">p</a> <a id="17051" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="17053" href="/Relations/#17028" class="Bound">q</a>
+    <a id="17059" class="Comment">-------------</a>
+  <a id="17075" class="Symbol">→</a> <a id="17077" href="/Relations/#17022" class="Bound">m</a> <a id="17079" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#230" class="Primitive Operator">+</a> <a id="17081" href="/Relations/#17026" class="Bound">p</a> <a id="17083" href="/Relations/#1414" class="Datatype Operator">≤</a> <a id="17085" href="/Relations/#17024" class="Bound">n</a> <a id="17087" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#230" class="Primitive Operator">+</a> <a id="17089" href="/Relations/#17028" class="Bound">q</a>
+<a id="17091" href="/Relations/#17008" class="Function">+-mono-≤</a> <a id="17100" href="/Relations/#17100" class="Bound">m</a> <a id="17102" href="/Relations/#17102" class="Bound">n</a> <a id="17104" href="/Relations/#17104" class="Bound">p</a> <a id="17106" href="/Relations/#17106" class="Bound">q</a> <a id="17108" href="/Relations/#17108" class="Bound">m≤n</a> <a id="17112" href="/Relations/#17112" class="Bound">p≤q</a>  <a id="17117" class="Symbol">=</a>  <a id="17120" href="/Relations/#7498" class="Function">≤-trans</a> <a id="17128" class="Symbol">(</a><a id="17129" href="/Relations/#16650" class="Function">+-monoˡ-≤</a> <a id="17139" href="/Relations/#17100" class="Bound">m</a> <a id="17141" href="/Relations/#17102" class="Bound">n</a> <a id="17143" href="/Relations/#17104" class="Bound">p</a> <a id="17145" href="/Relations/#17108" class="Bound">m≤n</a><a id="17148" class="Symbol">)</a> <a id="17150" class="Symbol">(</a><a id="17151" href="/Relations/#15834" class="Function">+-monoʳ-≤</a> <a id="17161" href="/Relations/#17102" class="Bound">n</a> <a id="17163" href="/Relations/#17104" class="Bound">p</a> <a id="17165" href="/Relations/#17106" class="Bound">q</a> <a id="17167" href="/Relations/#17112" class="Bound">p≤q</a><a id="17170" class="Symbol">)</a></pre>
+<p>Invoking <code class="highlighter-rouge">+-monoˡ-≤ m n p m≤n</code> proves <code class="highlighter-rouge">m + p ≤ n + p</code> and invoking
+<code class="highlighter-rouge">+-monoʳ-≤ n p q p≤q</code> proves <code class="highlighter-rouge">n + p ≤ n + q</code>, and combining these with
+transitivity proves <code class="highlighter-rouge">m + p ≤ n + q</code>, as was to be shown.</p>
+
+<h4 id="exercise--mono--stretch">Exercise <code class="highlighter-rouge">*-mono-≤</code> (stretch)</h4>
+
+<p>Show that multiplication is monotonic with regard to inequality.</p>
+
+<h2 id="strict-inequality">Strict inequality</h2>
+
+<p>We can define strict inequality similarly to inequality:</p>
+<pre class="Agda"><a id="17596" class="Keyword">infix</a> <a id="17602" class="Number">4</a> <a id="17604" href="/Relations/#17614" class="Datatype Operator">_&lt;_</a>
+
+<a id="17609" class="Keyword">data</a> <a id="_&lt;_"></a><a id="17614" href="/Relations/#17614" class="Datatype Operator">_&lt;_</a> <a id="17618" class="Symbol">:</a> <a id="17620" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a> <a id="17622" class="Symbol">→</a> <a id="17624" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a> <a id="17626" class="Symbol">→</a> <a id="17628" class="PrimitiveType">Set</a> <a id="17632" class="Keyword">where</a>
+
+  <a id="_&lt;_.z&lt;s"></a><a id="17641" href="/Relations/#17641" class="InductiveConstructor">z&lt;s</a> <a id="17645" class="Symbol">:</a> <a id="17647" class="Symbol">∀</a> <a id="17649" class="Symbol">{</a><a id="17650" href="/Relations/#17650" class="Bound">n</a> <a id="17652" class="Symbol">:</a> <a id="17654" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="17655" class="Symbol">}</a>
+      <a id="17663" class="Comment">------------</a>
+    <a id="17680" class="Symbol">→</a> <a id="17682" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#115" class="InductiveConstructor">zero</a> <a id="17687" href="/Relations/#17614" class="Datatype Operator">&lt;</a> <a id="17689" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="17693" href="/Relations/#17650" class="Bound">n</a>
+
+  <a id="_&lt;_.s&lt;s"></a><a id="17698" href="/Relations/#17698" class="InductiveConstructor">s&lt;s</a> <a id="17702" class="Symbol">:</a> <a id="17704" class="Symbol">∀</a> <a id="17706" class="Symbol">{</a><a id="17707" href="/Relations/#17707" class="Bound">m</a> <a id="17709" href="/Relations/#17709" class="Bound">n</a> <a id="17711" class="Symbol">:</a> <a id="17713" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="17714" class="Symbol">}</a>
+    <a id="17720" class="Symbol">→</a> <a id="17722" href="/Relations/#17707" class="Bound">m</a> <a id="17724" href="/Relations/#17614" class="Datatype Operator">&lt;</a> <a id="17726" href="/Relations/#17709" class="Bound">n</a>
+      <a id="17734" class="Comment">-------------</a>
+    <a id="17752" class="Symbol">→</a> <a id="17754" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="17758" href="/Relations/#17707" class="Bound">m</a> <a id="17760" href="/Relations/#17614" class="Datatype Operator">&lt;</a> <a id="17762" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="17766" href="/Relations/#17709" class="Bound">n</a></pre>
+<p>The key difference is that zero is less than the successor of an
+arbitrary number, but is not less than zero.</p>
+
+<p>Clearly, strict inequality is not reflexive. However it is
+<em>irreflexive</em> in that <code class="highlighter-rouge">n &lt; n</code> never holds for any value of <code class="highlighter-rouge">n</code>.
+Like inequality, strict inequality is transitive.
+Strict inequality is not total, but satisfies the closely related property of
+<em>trichotomy</em>: for any <code class="highlighter-rouge">m</code> and <code class="highlighter-rouge">n</code>, exactly one of <code class="highlighter-rouge">m &lt; n</code>, <code class="highlighter-rouge">m ≡ n</code>, or <code class="highlighter-rouge">m &gt; n</code>
+holds (where we define <code class="highlighter-rouge">m &gt; n</code> to hold exactly when <code class="highlighter-rouge">n &lt; m</code>).
+It is also monotonic with regards to addition and multiplication.</p>
+
+<p>Most of the above are considered in exercises below.  Irreflexivity
+requires negation, as does the fact that the three cases in
+trichotomy are mutually exclusive, so those points are deferred to
+Chapter <a href="/Negation/">Negation</a>.</p>
+
+<p>It is straightforward to show that <code class="highlighter-rouge">suc m ≤ n</code> implies <code class="highlighter-rouge">m &lt; n</code>,
+and conversely.  One can then give an alternative derivation of the
+properties of strict inequality, such as transitivity, by
+exploiting the corresponding properties of inequality.</p>
+
+<h4 id="less-trans">Exercise <code class="highlighter-rouge">&lt;-trans</code> (recommended)</h4>
+
+<p>Show that strict inequality is transitive.</p>
+
+<h4 id="trichotomy">Exercise <code class="highlighter-rouge">trichotomy</code></h4>
+
+<p>Show that strict inequality satisfies a weak version of trichotomy, in
+the sense that for any <code class="highlighter-rouge">m</code> and <code class="highlighter-rouge">n</code> that one of the following holds:</p>
+<ul>
+  <li><code class="highlighter-rouge">m &lt; n</code>,</li>
+  <li><code class="highlighter-rouge">m ≡ n</code>, or</li>
+  <li><code class="highlighter-rouge">m &gt; n</code>.</li>
+</ul>
+
+<p>Define <code class="highlighter-rouge">m &gt; n</code> to be the same as <code class="highlighter-rouge">n &lt; m</code>.
+You will need a suitable data declaration,
+similar to that used for totality.
+(We will show that the three cases are exclusive after we introduce
+<a href="/Negation/">negation</a>.)</p>
+
+<h4 id="plus-mono-less">Exercise <code class="highlighter-rouge">+-mono-&lt;</code></h4>
+
+<p>Show that addition is monotonic with respect to strict inequality.
+As with inequality, some additional definitions may be required.</p>
+
+<h4 id="leq-iff-less">Exercise <code class="highlighter-rouge">≤-iff-&lt;</code> (recommended)</h4>
+
+<p>Show that <code class="highlighter-rouge">suc m ≤ n</code> implies <code class="highlighter-rouge">m &lt; n</code>, and conversely.</p>
+
+<h4 id="less-trans-revisited">Exercise <code class="highlighter-rouge">&lt;-trans-revisited</code></h4>
+
+<p>Give an alternative proof that strict inequality is transitive,
+using the relating between strict inequality and inequality and
+the fact that inequality is transitive.</p>
+
+<h2 id="even-and-odd">Even and odd</h2>
+
+<p>As a further example, let’s specify even and odd numbers.  Inequality
+and strict inequality are <em>binary relations</em>, while even and odd are
+<em>unary relations</em>, sometimes called <em>predicates</em>:</p>
+<pre class="Agda"><a id="20100" class="Keyword">data</a> <a id="even"></a><a id="20105" href="/Relations/#20105" class="Datatype">even</a> <a id="20110" class="Symbol">:</a> <a id="20112" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a> <a id="20114" class="Symbol">→</a> <a id="20116" class="PrimitiveType">Set</a>
+<a id="20120" class="Keyword">data</a> <a id="odd"></a><a id="20125" href="/Relations/#20125" class="Datatype">odd</a>  <a id="20130" class="Symbol">:</a> <a id="20132" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a> <a id="20134" class="Symbol">→</a> <a id="20136" class="PrimitiveType">Set</a>
+
+<a id="20141" class="Keyword">data</a> <a id="20146" href="/Relations/#20105" class="Datatype">even</a> <a id="20151" class="Keyword">where</a>
+
+  <a id="even.zero"></a><a id="20160" href="/Relations/#20160" class="InductiveConstructor">zero</a> <a id="20165" class="Symbol">:</a>
+      <a id="20173" class="Comment">---------</a>
+      <a id="20189" href="/Relations/#20105" class="Datatype">even</a> <a id="20194" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#115" class="InductiveConstructor">zero</a>
+
+  <a id="even.suc"></a><a id="20202" href="/Relations/#20202" class="InductiveConstructor">suc</a>  <a id="20207" class="Symbol">:</a> <a id="20209" class="Symbol">∀</a> <a id="20211" class="Symbol">{</a><a id="20212" href="/Relations/#20212" class="Bound">n</a> <a id="20214" class="Symbol">:</a> <a id="20216" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="20217" class="Symbol">}</a>
+    <a id="20223" class="Symbol">→</a> <a id="20225" href="/Relations/#20125" class="Datatype">odd</a> <a id="20229" href="/Relations/#20212" class="Bound">n</a>
+      <a id="20237" class="Comment">------------</a>
+    <a id="20254" class="Symbol">→</a> <a id="20256" href="/Relations/#20105" class="Datatype">even</a> <a id="20261" class="Symbol">(</a><a id="20262" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="20266" href="/Relations/#20212" class="Bound">n</a><a id="20267" class="Symbol">)</a>
+
+<a id="20270" class="Keyword">data</a> <a id="20275" href="/Relations/#20125" class="Datatype">odd</a> <a id="20279" class="Keyword">where</a>
+
+  <a id="odd.suc"></a><a id="20288" href="/Relations/#20288" class="InductiveConstructor">suc</a>   <a id="20294" class="Symbol">:</a> <a id="20296" class="Symbol">∀</a> <a id="20298" class="Symbol">{</a><a id="20299" href="/Relations/#20299" class="Bound">n</a> <a id="20301" class="Symbol">:</a> <a id="20303" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="20304" class="Symbol">}</a>
+    <a id="20310" class="Symbol">→</a> <a id="20312" href="/Relations/#20105" class="Datatype">even</a> <a id="20317" href="/Relations/#20299" class="Bound">n</a>
+      <a id="20325" class="Comment">-----------</a>
+    <a id="20341" class="Symbol">→</a> <a id="20343" href="/Relations/#20125" class="Datatype">odd</a> <a id="20347" class="Symbol">(</a><a id="20348" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a> <a id="20352" href="/Relations/#20299" class="Bound">n</a><a id="20353" class="Symbol">)</a></pre>
+<p>A number is even if it is zero or the successor of an odd number,
+and odd if it is the successor of an even number.</p>
+
+<p>This is our first use of a mutually recursive datatype declaration.
+Since each identifier must be defined before it is used, we first
+declare the indexed types <code class="highlighter-rouge">even</code> and <code class="highlighter-rouge">odd</code> (omitting the <code class="highlighter-rouge">where</code>
+keyword and the declarations of the constructors) and then
+declare the constructors (omitting the signatures <code class="highlighter-rouge">ℕ → Set</code>
+which were given earlier).</p>
+
+<p>This is also our first use of <em>overloaded</em> constructors,
+that is, using the same name for constructors of different types.
+Here <code class="highlighter-rouge">suc</code> means one of three constructors:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>suc : ℕ → ℕ
+
+suc : ∀ {n : ℕ}
+  → odd n
+    ------------
+  → even (suc n)
+
+suc : ∀ {n : ℕ}
+  → even n
+    -----------
+  → odd (suc n)
+</code></pre></div></div>
+
+<p>Similarly, <code class="highlighter-rouge">zero</code> refers to one of two constructors. Due to how it
+does type inference, Agda does not allow overloading of defined names,
+but does allow overloading of constructors.  It is recommended that
+one restrict overloading to related meanings, as we have done here,
+but it is not required.</p>
+
+<p>We show that the sum of two even numbers is even:</p>
+<pre class="Agda"><a id="e+e≡e"></a><a id="21529" href="/Relations/#21529" class="Function">e+e≡e</a> <a id="21535" class="Symbol">:</a> <a id="21537" class="Symbol">∀</a> <a id="21539" class="Symbol">{</a><a id="21540" href="/Relations/#21540" class="Bound">m</a> <a id="21542" href="/Relations/#21542" class="Bound">n</a> <a id="21544" class="Symbol">:</a> <a id="21546" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="21547" class="Symbol">}</a>
+  <a id="21551" class="Symbol">→</a> <a id="21553" href="/Relations/#20105" class="Datatype">even</a> <a id="21558" href="/Relations/#21540" class="Bound">m</a>
+  <a id="21562" class="Symbol">→</a> <a id="21564" href="/Relations/#20105" class="Datatype">even</a> <a id="21569" href="/Relations/#21542" class="Bound">n</a>
+    <a id="21575" class="Comment">------------</a>
+  <a id="21590" class="Symbol">→</a> <a id="21592" href="/Relations/#20105" class="Datatype">even</a> <a id="21597" class="Symbol">(</a><a id="21598" href="/Relations/#21540" class="Bound">m</a> <a id="21600" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#230" class="Primitive Operator">+</a> <a id="21602" href="/Relations/#21542" class="Bound">n</a><a id="21603" class="Symbol">)</a>
+
+<a id="o+e≡o"></a><a id="21606" href="/Relations/#21606" class="Function">o+e≡o</a> <a id="21612" class="Symbol">:</a> <a id="21614" class="Symbol">∀</a> <a id="21616" class="Symbol">{</a><a id="21617" href="/Relations/#21617" class="Bound">m</a> <a id="21619" href="/Relations/#21619" class="Bound">n</a> <a id="21621" class="Symbol">:</a> <a id="21623" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="21624" class="Symbol">}</a>
+  <a id="21628" class="Symbol">→</a> <a id="21630" href="/Relations/#20125" class="Datatype">odd</a> <a id="21634" href="/Relations/#21617" class="Bound">m</a>
+  <a id="21638" class="Symbol">→</a> <a id="21640" href="/Relations/#20105" class="Datatype">even</a> <a id="21645" href="/Relations/#21619" class="Bound">n</a>
+    <a id="21651" class="Comment">-----------</a>
+  <a id="21665" class="Symbol">→</a> <a id="21667" href="/Relations/#20125" class="Datatype">odd</a> <a id="21671" class="Symbol">(</a><a id="21672" href="/Relations/#21617" class="Bound">m</a> <a id="21674" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#230" class="Primitive Operator">+</a> <a id="21676" href="/Relations/#21619" class="Bound">n</a><a id="21677" class="Symbol">)</a>
+
+<a id="21680" href="/Relations/#21529" class="Function">e+e≡e</a> <a id="21686" href="/Relations/#20160" class="InductiveConstructor">zero</a>     <a id="21695" href="/Relations/#21695" class="Bound">en</a>  <a id="21699" class="Symbol">=</a>  <a id="21702" href="/Relations/#21695" class="Bound">en</a>
+<a id="21705" href="/Relations/#21529" class="Function">e+e≡e</a> <a id="21711" class="Symbol">(</a><a id="21712" href="/Relations/#20202" class="InductiveConstructor">suc</a> <a id="21716" href="/Relations/#21716" class="Bound">om</a><a id="21718" class="Symbol">)</a> <a id="21720" href="/Relations/#21720" class="Bound">en</a>  <a id="21724" class="Symbol">=</a>  <a id="21727" href="/Relations/#20202" class="InductiveConstructor">suc</a> <a id="21731" class="Symbol">(</a><a id="21732" href="/Relations/#21606" class="Function">o+e≡o</a> <a id="21738" href="/Relations/#21716" class="Bound">om</a> <a id="21741" href="/Relations/#21720" class="Bound">en</a><a id="21743" class="Symbol">)</a>
+
+<a id="21746" href="/Relations/#21606" class="Function">o+e≡o</a> <a id="21752" class="Symbol">(</a><a id="21753" href="/Relations/#20288" class="InductiveConstructor">suc</a> <a id="21757" href="/Relations/#21757" class="Bound">em</a><a id="21759" class="Symbol">)</a> <a id="21761" href="/Relations/#21761" class="Bound">en</a>  <a id="21765" class="Symbol">=</a>  <a id="21768" href="/Relations/#20288" class="InductiveConstructor">suc</a> <a id="21772" class="Symbol">(</a><a id="21773" href="/Relations/#21529" class="Function">e+e≡e</a> <a id="21779" href="/Relations/#21757" class="Bound">em</a> <a id="21782" href="/Relations/#21761" class="Bound">en</a><a id="21784" class="Symbol">)</a></pre>
+<p>Corresponding to the mutually recursive types, we use two mutually recursive
+functions, one to show that the sum of two even numbers is even, and the other
+to show that the sum of an odd and an even number is odd.</p>
+
+<p>This is our first use of mutually recursive functions.  Since each identifier
+must be defined before it is used, we first give the signatures for both
+functions and then the equations that define them.</p>
+
+<p>To show that the sum of two even numbers is even, consider the
+evidence that the first number is even. If it is because it is zero,
+then the sum is even because the second number is even.  If it is
+because it is the successor of an odd number, then the result is even
+because it is the successor of the sum of an odd and an even number,
+which is odd.</p>
+
+<p>To show that the sum of an odd and even number is odd, consider the
+evidence that the first number is odd. If it is because it is the
+successor of an even number, then the result is odd because it is the
+successor of the sum of two even numbers, which is even.</p>
+
+<h4 id="odd-plus-odd">Exercise <code class="highlighter-rouge">o+o≡e</code> (stretch)</h4>
+
+<p>Show that the sum of two odd numbers is even.</p>
+
+<h4 id="Bin-predicates">Exercise <code class="highlighter-rouge">Bin-predicates</code> (stretch)</h4>
+
+<p>Recall that 
+Exercise <a href="/Naturals/#Bin">Bin</a>
+defines a datatype <code class="highlighter-rouge">Bin</code> of bitstrings representing natural numbers.
+Representations are not unique due to leading zeros.
+Hence, eleven may be represented by both of the following:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>x1 x1 x0 x1 nil
+x1 x1 x0 x1 x0 x0 nil
+</code></pre></div></div>
+
+<p>Define a predicate</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Can : Bin → Set
+</code></pre></div></div>
+
+<p>over all bitstrings that holds if the bitstring is canonical, meaning
+it has no leading zeros; the first representation of eleven above is
+canonical, and the second is not.  To define it, you will need an
+auxiliary predicate</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>One : Bin → Set
+</code></pre></div></div>
+
+<p>that holds only if the bistring has a leading one.  A bitstring is
+canonical if it has a leading one (representing a positive number) or
+if it consists of a single zero (representing zero).</p>
+
+<p>Show that increment preserves canonical bitstrings:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Can x
+------------
+Can (inc x)
+</code></pre></div></div>
+
+<p>Show that converting a natural to a bitstring always yields a
+canonical bitstring:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>----------
+Can (to n)
+</code></pre></div></div>
+
+<p>Show that converting a canonical bitstring to a natural
+and back is the identity:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Can x
+---------------
+to (from x) ≡ x
+</code></pre></div></div>
+
+<p>(Hint: For each of these, you may first need to prove related
+properties of <code class="highlighter-rouge">One</code>.)</p>
+
+<h2 id="standard-library">Standard library</h2>
+
+<p>Definitions similar to those in this chapter can be found in the standard library:</p>
+<pre class="Agda"><a id="24288" class="Keyword">import</a> <a id="24295" href="https://agda.github.io/agda-stdlib/Data.Nat.html" class="Module">Data.Nat</a> <a id="24304" class="Keyword">using</a> <a id="24310" class="Symbol">(</a><a id="24311" href="https://agda.github.io/agda-stdlib/Data.Nat.Base.html#845" class="Datatype Operator">_≤_</a><a id="24314" class="Symbol">;</a> <a id="24316" href="https://agda.github.io/agda-stdlib/Data.Nat.Base.html#868" class="InductiveConstructor">z≤n</a><a id="24319" class="Symbol">;</a> <a id="24321" href="https://agda.github.io/agda-stdlib/Data.Nat.Base.html#910" class="InductiveConstructor">s≤s</a><a id="24324" class="Symbol">)</a>
+<a id="24326" class="Keyword">import</a> <a id="24333" href="https://agda.github.io/agda-stdlib/Data.Nat.Properties.html" class="Module">Data.Nat.Properties</a> <a id="24353" class="Keyword">using</a> <a id="24359" class="Symbol">(</a><a id="24360" href="https://agda.github.io/agda-stdlib/Data.Nat.Properties.html#2115" class="Function">≤-refl</a><a id="24366" class="Symbol">;</a> <a id="24368" href="https://agda.github.io/agda-stdlib/Data.Nat.Properties.html#2308" class="Function">≤-trans</a><a id="24375" class="Symbol">;</a> <a id="24377" href="https://agda.github.io/agda-stdlib/Data.Nat.Properties.html#2165" class="Function">≤-antisym</a><a id="24386" class="Symbol">;</a> <a id="24388" href="https://agda.github.io/agda-stdlib/Data.Nat.Properties.html#2420" class="Function">≤-total</a><a id="24395" class="Symbol">;</a>
+                                  <a id="24431" href="https://agda.github.io/agda-stdlib/Data.Nat.Properties.html#12667" class="Function">+-monoʳ-≤</a><a id="24440" class="Symbol">;</a> <a id="24442" href="https://agda.github.io/agda-stdlib/Data.Nat.Properties.html#12577" class="Function">+-monoˡ-≤</a><a id="24451" class="Symbol">;</a> <a id="24453" href="https://agda.github.io/agda-stdlib/Data.Nat.Properties.html#12421" class="Function">+-mono-≤</a><a id="24461" class="Symbol">)</a></pre>
+<p>In the standard library, <code class="highlighter-rouge">≤-total</code> is formalised in terms of
+disjunction (which we define in
+Chapter <a href="/Connectives/">Connectives</a>),
+and <code class="highlighter-rouge">+-monoʳ-≤</code>, <code class="highlighter-rouge">+-monoˡ-≤</code>, <code class="highlighter-rouge">+-mono-≤</code> are proved differently than here,
+and more arguments are implicit.</p>
+
+<h2 id="unicode">Unicode</h2>
+
+<p>This chapter uses the following unicode:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>≤  U+2264  LESS-THAN OR EQUAL TO (\&lt;=, \le)
+≥  U+2265  GREATER-THAN OR EQUAL TO (\&gt;=, \ge)
+ˡ  U+02E1  MODIFIER LETTER SMALL L (\^l)
+ʳ  U+02B3  MODIFIER LETTER SMALL R (\^r)
+</code></pre></div></div>
+
+<p>The commands <code class="highlighter-rouge">\^l</code> and <code class="highlighter-rouge">\^r</code> give access to a variety of superscript
+leftward and rightward arrows in addition to superscript letters <code class="highlighter-rouge">l</code> and <code class="highlighter-rouge">r</code>.</p>
+
+  </div>
+
+  <p style="text-align:center;">
+    
+    <a alt="Previous chapter" href="/Induction/">Prev</a>
+    &bullet;
+    
+    
+    <a alt="Source code" href="https://github.com/plfa/plfa.github.io/blob/dev/src/plfa/Relations.lagda">Source</a>
+    
+    
+    &bullet;
+    <a alt="Next chapter" href="/Equality/">Next</a>
+    
+</p>
+
+
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Programming Language Foundations in Agda
+</h2><div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Philip Wadler</li>
+          <li><a class="u-email" href="mailto:wadler@inf.ed.ac.uk">wadler@inf.ed.ac.uk</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/wadler"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">wadler</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3"></div>
+    </div><div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Wen Kokke</li>
+          <li><a class="u-email" href="mailto:wen.kokke@ed.ac.uk">wen.kokke@ed.ac.uk</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/wenkokke"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">wenkokke</span></a></li><li><a href="https://www.twitter.com/wenkokke"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">wenkokke</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3"></div>
+    </div>This work is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>
+  </div>
+</footer>
+<!-- Import jQuery -->
+<script type="text/javascript" src="/assets/jquery.js"></script>
+
+<!-- Script which allows for foldable code blocks -->
+<script type="text/javascript">
+ $('div.foldable pre').each(function(){
+     var autoHeight = $(this).height();
+     var lineHeight = parseFloat($(this).css('line-height'));
+
+     var plus    = $("<div></div>");
+     var horLine = $("<div></div>");
+     var verLine = $("<div></div>");
+     $(this).prepend(plus);
+     plus.css({
+         'position'         : 'relative',
+         'float'            : 'right',
+         'right'            : '-' + (0.5 * lineHeight - 1.5) + 'px',
+         'width'            : lineHeight,
+         'height'           : lineHeight});
+     verLine.css({
+         'position'         : 'relative',
+         'height'           : lineHeight,
+         'width'            : '3px',
+         'background-color' : '#C1E0FF'});
+     horLine.css({
+         'position'         : 'relative',
+         'top'              : '-' + (0.5 * lineHeight + 1.5) + 'px',
+         'left'             : '-' + (0.5 * lineHeight - 1.5) + 'px',
+         'height'           : '3px',
+         'width'            : lineHeight,
+         'background-color' : '#C1E0FF'});
+     plus.append(verLine);
+     plus.append(horLine);
+
+     $(this).height(2.0 * lineHeight);
+     $(this).css('overflow','hidden');
+
+     $(this).click(function(){
+         if ($(this).height() == autoHeight) {
+             $(this).height(2.0 * lineHeight);
+             plus.show();
+         }
+         else {
+             $(this).height('auto');
+             plus.hide();
+         }
+     });
+ });
+</script>
+
+<!-- Import KaTeX -->
+<script type="text/javascript" src="/assets/katex.js"></script>
+
+<!-- Script which renders TeX using KaTeX -->
+<script type="text/javascript">
+ $("script[type='math/tex']").replaceWith(
+     function(){
+         var tex = $(this).text();
+         return "<span class=\"inline-equation\">" +
+                katex.renderToString(tex) +
+                "</span>";
+     });
+ $("script[type='math/tex; mode=display']").replaceWith(
+     function(){
+         var tex = $(this).text().replace(/%.*?(\n|$)/g,"");
+         return "<div class=\"equation\">" +
+                katex.renderToString("\\displaystyle "+tex) +
+                "</div>";
+     });
+</script>
+</body>
+
+</html>

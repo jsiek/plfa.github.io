@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Connectives: Conjunction, disjunction, and implication | Programming Language Foundations in Agda
+</title><!-- Begin Jekyll SEO tag v2.5.0 -->
+<meta name="generator" content="Jekyll v3.7.4" />
+<meta property="og:title" content="Connectives: Conjunction, disjunction, and implication" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Programming Language Foundations in Agda" />
+<meta property="og:description" content="Programming Language Foundations in Agda" />
+<link rel="canonical" href="https://plfa.github.io/Connectives/" />
+<meta property="og:url" content="https://plfa.github.io/Connectives/" />
+<meta property="og:site_name" content="Programming Language Foundations in Agda" />
+<script type="application/ld+json">
+{"description":"Programming Language Foundations in Agda","@type":"WebPage","url":"https://plfa.github.io/Connectives/","headline":"Connectives: Conjunction, disjunction, and implication","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"></head>
+<body><header class="site-header" role="banner">
+
+    <div class="wrapper">
+
+        <a class="site-title" href="/">Programming Language Foundations in Agda
+</a>
+
+        <nav class="site-nav">
+            <span class="menu-icon">
+                <svg viewBox="0 0 18 15" width="18px" height="15px">
+                    <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+                    <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+                    <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+                </svg>
+            </span>
+
+            <div class="trigger">
+                <a class="page-link" href="/">Table of Contents</a>
+                <a class="page-link" href="/GettingStarted/">Getting Started</a>
+            </div>
+        </nav>
+
+    </div>
+
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post">
+
+  <header class="post-header">
+      <h1 class="post-title">Connectives: Conjunction, disjunction, and implication</h1>
+  </header>
+
+  <p style="text-align:center;">
+    
+    <a alt="Previous chapter" href="/Isomorphism/">Prev</a>
+    &bullet;
+    
+    
+    <a alt="Source code" href="https://github.com/plfa/plfa.github.io/blob/dev/src/plfa/Connectives.lagda">Source</a>
+    
+    
+    &bullet;
+    <a alt="Next chapter" href="/Negation/">Next</a>
+    
+</p>
+
+
+  <div class="post-content">
+    <pre class="Agda"><a id="184" class="Keyword">module</a> <a id="191" href="/Connectives/" class="Module">plfa.Connectives</a> <a id="208" class="Keyword">where</a></pre>
+
+<p>This chapter introduces the basic logical connectives, by observing a
+correspondence between connectives of logic and data types, a
+principle known as <em>Propositions as Types</em>:</p>
+
+<ul>
+  <li><em>conjunction</em> is <em>product</em>,</li>
+  <li><em>disjunction</em> is <em>sum</em>,</li>
+  <li><em>true</em> is <em>unit type</em>,</li>
+  <li><em>false</em> is <em>empty type</em>,</li>
+  <li><em>implication</em> is <em>function space</em>.</li>
+</ul>
+
+<h2 id="imports">Imports</h2>
+
+<pre class="Agda"><a id="585" class="Keyword">import</a> <a id="592" href="https://agda.github.io/agda-stdlib/Relation.Binary.PropositionalEquality.html" class="Module">Relation.Binary.PropositionalEquality</a> <a id="630" class="Symbol">as</a> <a id="633" class="Module">Eq</a>
+<a id="636" class="Keyword">open</a> <a id="641" href="https://agda.github.io/agda-stdlib/Relation.Binary.PropositionalEquality.html" class="Module">Eq</a> <a id="644" class="Keyword">using</a> <a id="650" class="Symbol">(</a><a id="651" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#83" class="Datatype Operator">_≡_</a><a id="654" class="Symbol">;</a> <a id="656" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a><a id="660" class="Symbol">;</a> <a id="662" href="https://agda.github.io/agda-stdlib/Relation.Binary.PropositionalEquality.Core.html#838" class="Function">sym</a><a id="665" class="Symbol">;</a> <a id="667" href="https://agda.github.io/agda-stdlib/Relation.Binary.PropositionalEquality.Core.html#887" class="Function">trans</a><a id="672" class="Symbol">;</a> <a id="674" href="https://agda.github.io/agda-stdlib/Relation.Binary.PropositionalEquality.html#1170" class="Function">cong</a><a id="678" class="Symbol">)</a>
+<a id="680" class="Keyword">open</a> <a id="685" href="https://agda.github.io/agda-stdlib/Relation.Binary.PropositionalEquality.html#3975" class="Module">Eq.≡-Reasoning</a>
+<a id="700" class="Keyword">open</a> <a id="705" class="Keyword">import</a> <a id="712" href="https://agda.github.io/agda-stdlib/Data.Nat.html" class="Module">Data.Nat</a> <a id="721" class="Keyword">using</a> <a id="727" class="Symbol">(</a><a id="728" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a><a id="729" class="Symbol">;</a> <a id="731" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#115" class="InductiveConstructor">zero</a><a id="735" class="Symbol">;</a> <a id="737" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#128" class="InductiveConstructor">suc</a><a id="740" class="Symbol">;</a> <a id="742" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#230" class="Primitive Operator">_+_</a><a id="745" class="Symbol">;</a> <a id="747" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#433" class="Primitive Operator">_*_</a><a id="750" class="Symbol">)</a>
+<a id="752" class="Keyword">open</a> <a id="757" class="Keyword">import</a> <a id="764" href="https://agda.github.io/agda-stdlib/Data.Nat.Properties.html" class="Module">Data.Nat.Properties</a> <a id="784" class="Keyword">using</a> <a id="790" class="Symbol">(</a><a id="791" href="https://agda.github.io/agda-stdlib/Data.Nat.Properties.html#9272" class="Function">+-suc</a><a id="796" class="Symbol">)</a>
+<a id="798" class="Keyword">open</a> <a id="803" class="Keyword">import</a> <a id="810" href="https://agda.github.io/agda-stdlib/Function.html" class="Module">Function</a> <a id="819" class="Keyword">using</a> <a id="825" class="Symbol">(</a><a id="826" href="https://agda.github.io/agda-stdlib/Function.html#769" class="Function Operator">_∘_</a><a id="829" class="Symbol">)</a>
+<a id="831" class="Keyword">open</a> <a id="836" class="Keyword">import</a> <a id="843" href="/Isomorphism/" class="Module">plfa.Isomorphism</a> <a id="860" class="Keyword">using</a> <a id="866" class="Symbol">(</a><a id="867" href="/Isomorphism/#4104" class="Record Operator">_≃_</a><a id="870" class="Symbol">;</a> <a id="872" href="/Isomorphism/#6799" class="Function">≃-sym</a><a id="877" class="Symbol">;</a> <a id="879" href="/Isomorphism/#7140" class="Function">≃-trans</a><a id="886" class="Symbol">;</a> <a id="888" href="/Isomorphism/#9022" class="Record Operator">_≲_</a><a id="891" class="Symbol">;</a> <a id="893" href="/Isomorphism/#2748" class="Postulate">extensionality</a><a id="907" class="Symbol">)</a>
+<a id="909" class="Keyword">open</a> <a id="914" href="/Isomorphism/#8240" class="Module">plfa.Isomorphism.≃-Reasoning</a></pre>
+
+<h2 id="conjunction-is-product">Conjunction is product</h2>
+
+<p>Given two propositions <code class="highlighter-rouge">A</code> and <code class="highlighter-rouge">B</code>, the conjunction <code class="highlighter-rouge">A × B</code> holds
+if both <code class="highlighter-rouge">A</code> holds and <code class="highlighter-rouge">B</code> holds.  We formalise this idea by
+declaring a suitable inductive type:</p>
+<pre class="Agda"><a id="1159" class="Keyword">data</a> <a id="_×_"></a><a id="1164" href="/Connectives/#1164" class="Datatype Operator">_×_</a> <a id="1168" class="Symbol">(</a><a id="1169" href="/Connectives/#1169" class="Bound">A</a> <a id="1171" class="Symbol">:</a> <a id="1173" class="PrimitiveType">Set</a><a id="1176" class="Symbol">)</a> <a id="1178" class="Symbol">(</a><a id="1179" href="/Connectives/#1179" class="Bound">B</a> <a id="1181" class="Symbol">:</a> <a id="1183" class="PrimitiveType">Set</a><a id="1186" class="Symbol">)</a> <a id="1188" class="Symbol">:</a> <a id="1190" class="PrimitiveType">Set</a> <a id="1194" class="Keyword">where</a>
+
+  <a id="_×_.⟨_,_⟩"></a><a id="1203" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨_,_⟩</a> <a id="1209" class="Symbol">:</a> 
+      <a id="1218" href="/Connectives/#1169" class="Bound">A</a>
+    <a id="1224" class="Symbol">→</a> <a id="1226" href="/Connectives/#1179" class="Bound">B</a>
+      <a id="1234" class="Comment">-----</a>
+    <a id="1244" class="Symbol">→</a> <a id="1246" href="/Connectives/#1169" class="Bound">A</a> <a id="1248" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="1250" href="/Connectives/#1179" class="Bound">B</a></pre>
+<p>Evidence that <code class="highlighter-rouge">A × B</code> holds is of the form <code class="highlighter-rouge">⟨ M , N ⟩</code>, where <code class="highlighter-rouge">M</code>
+provides evidence that <code class="highlighter-rouge">A</code> holds and <code class="highlighter-rouge">N</code> provides evidence that <code class="highlighter-rouge">B</code>
+holds.</p>
+
+<p>Given evidence that <code class="highlighter-rouge">A × B</code> holds, we can conclude that either
+<code class="highlighter-rouge">A</code> holds or <code class="highlighter-rouge">B</code> holds:</p>
+<pre class="Agda"><a id="proj₁"></a><a id="1505" href="/Connectives/#1505" class="Function">proj₁</a> <a id="1511" class="Symbol">:</a> <a id="1513" class="Symbol">∀</a> <a id="1515" class="Symbol">{</a><a id="1516" href="/Connectives/#1516" class="Bound">A</a> <a id="1518" href="/Connectives/#1518" class="Bound">B</a> <a id="1520" class="Symbol">:</a> <a id="1522" class="PrimitiveType">Set</a><a id="1525" class="Symbol">}</a>
+  <a id="1529" class="Symbol">→</a> <a id="1531" href="/Connectives/#1516" class="Bound">A</a> <a id="1533" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="1535" href="/Connectives/#1518" class="Bound">B</a>
+    <a id="1541" class="Comment">-----</a>
+  <a id="1549" class="Symbol">→</a> <a id="1551" href="/Connectives/#1516" class="Bound">A</a>
+<a id="1553" href="/Connectives/#1505" class="Function">proj₁</a> <a id="1559" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="1561" href="/Connectives/#1561" class="Bound">x</a> <a id="1563" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="1565" href="/Connectives/#1565" class="Bound">y</a> <a id="1567" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="1569" class="Symbol">=</a> <a id="1571" href="/Connectives/#1561" class="Bound">x</a>
+
+<a id="proj₂"></a><a id="1574" href="/Connectives/#1574" class="Function">proj₂</a> <a id="1580" class="Symbol">:</a> <a id="1582" class="Symbol">∀</a> <a id="1584" class="Symbol">{</a><a id="1585" href="/Connectives/#1585" class="Bound">A</a> <a id="1587" href="/Connectives/#1587" class="Bound">B</a> <a id="1589" class="Symbol">:</a> <a id="1591" class="PrimitiveType">Set</a><a id="1594" class="Symbol">}</a>
+  <a id="1598" class="Symbol">→</a> <a id="1600" href="/Connectives/#1585" class="Bound">A</a> <a id="1602" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="1604" href="/Connectives/#1587" class="Bound">B</a>
+    <a id="1610" class="Comment">-----</a>
+  <a id="1618" class="Symbol">→</a> <a id="1620" href="/Connectives/#1587" class="Bound">B</a>
+<a id="1622" href="/Connectives/#1574" class="Function">proj₂</a> <a id="1628" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="1630" href="/Connectives/#1630" class="Bound">x</a> <a id="1632" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="1634" href="/Connectives/#1634" class="Bound">y</a> <a id="1636" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="1638" class="Symbol">=</a> <a id="1640" href="/Connectives/#1634" class="Bound">y</a></pre>
+<p>If <code class="highlighter-rouge">L</code> provides evidence that <code class="highlighter-rouge">A × B</code> holds, then <code class="highlighter-rouge">proj₁ L</code> provides evidence
+that <code class="highlighter-rouge">A</code> holds, and <code class="highlighter-rouge">proj₂ L</code> provides evidence that <code class="highlighter-rouge">B</code> holds.</p>
+
+<p>Equivalently, we could also declare conjunction as a record type:</p>
+<pre class="Agda"><a id="1875" class="Keyword">record</a> <a id="_×′_"></a><a id="1882" href="/Connectives/#1882" class="Record Operator">_×′_</a> <a id="1887" class="Symbol">(</a><a id="1888" href="/Connectives/#1888" class="Bound">A</a> <a id="1890" href="/Connectives/#1890" class="Bound">B</a> <a id="1892" class="Symbol">:</a> <a id="1894" class="PrimitiveType">Set</a><a id="1897" class="Symbol">)</a> <a id="1899" class="Symbol">:</a> <a id="1901" class="PrimitiveType">Set</a> <a id="1905" class="Keyword">where</a>
+  <a id="1913" class="Keyword">field</a>
+    <a id="_×′_.proj₁′"></a><a id="1923" href="/Connectives/#1923" class="Field">proj₁′</a> <a id="1930" class="Symbol">:</a> <a id="1932" href="/Connectives/#1888" class="Bound">A</a>
+    <a id="_×′_.proj₂′"></a><a id="1938" href="/Connectives/#1938" class="Field">proj₂′</a> <a id="1945" class="Symbol">:</a> <a id="1947" href="/Connectives/#1890" class="Bound">B</a>
+<a id="1949" class="Keyword">open</a> <a id="1954" href="/Connectives/#1882" class="Module Operator">_×′_</a></pre>
+<p>Here record construction</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>record
+  { proj₁′ = M
+  ; proj₂′ = N
+  }
+</code></pre></div></div>
+
+<p>corresponds to the term</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>⟨ M , N ⟩
+</code></pre></div></div>
+
+<p>where <code class="highlighter-rouge">M</code> is a term of type <code class="highlighter-rouge">A</code> and <code class="highlighter-rouge">N</code> is a term of type <code class="highlighter-rouge">B</code>.</p>
+
+<p>When <code class="highlighter-rouge">⟨_,_⟩</code> appears in a term on the right-hand side of an equation
+we refer to it as a <em>constructor</em>, and when it appears in a pattern on
+the left-hand side of an equation we refer to it as a <em>destructor</em>.
+We may also refer to <code class="highlighter-rouge">proj₁</code> and <code class="highlighter-rouge">proj₂</code> as destructors, since they
+play a similar role.</p>
+
+<p>Other terminology refers to <code class="highlighter-rouge">⟨_,_⟩</code> as <em>introducing</em> a conjunction, and
+to <code class="highlighter-rouge">proj₁</code> and <code class="highlighter-rouge">proj₂</code> as <em>eliminating</em> a conjunction; indeed, the
+former is sometimes given the name <code class="highlighter-rouge">×-I</code> and the latter two the names
+<code class="highlighter-rouge">×-E₁</code> and <code class="highlighter-rouge">×-E₂</code>.  As we read the rules from top to bottom,
+introduction and elimination do what they say on the tin: the first
+<em>introduces</em> a formula for the connective, which appears in the
+conclusion but not in the hypotheses; the second <em>eliminates</em> a
+formula for the connective, which appears in a hypothesis but not in
+the conclusion. An introduction rule describes under what conditions
+we say the connective holds—how to <em>define</em> the connective. An
+elimination rule describes what we may conclude when the connective
+holds—how to <em>use</em> the connective.</p>
+
+<p>(The paragraph above was adopted from “Propositions as Types”, Philip Wadler,
+<em>Communications of the ACM</em>, December 2015.)</p>
+
+<p>In this case, applying each destructor and reassembling the results with the
+constructor is the identity over products:</p>
+<pre class="Agda"><a id="η-×"></a><a id="3488" href="/Connectives/#3488" class="Function">η-×</a> <a id="3492" class="Symbol">:</a> <a id="3494" class="Symbol">∀</a> <a id="3496" class="Symbol">{</a><a id="3497" href="/Connectives/#3497" class="Bound">A</a> <a id="3499" href="/Connectives/#3499" class="Bound">B</a> <a id="3501" class="Symbol">:</a> <a id="3503" class="PrimitiveType">Set</a><a id="3506" class="Symbol">}</a> <a id="3508" class="Symbol">(</a><a id="3509" href="/Connectives/#3509" class="Bound">w</a> <a id="3511" class="Symbol">:</a> <a id="3513" href="/Connectives/#3497" class="Bound">A</a> <a id="3515" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="3517" href="/Connectives/#3499" class="Bound">B</a><a id="3518" class="Symbol">)</a> <a id="3520" class="Symbol">→</a> <a id="3522" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="3524" href="/Connectives/#1505" class="Function">proj₁</a> <a id="3530" href="/Connectives/#3509" class="Bound">w</a> <a id="3532" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="3534" href="/Connectives/#1574" class="Function">proj₂</a> <a id="3540" href="/Connectives/#3509" class="Bound">w</a> <a id="3542" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="3544" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#83" class="Datatype Operator">≡</a> <a id="3546" href="/Connectives/#3509" class="Bound">w</a>
+<a id="3548" href="/Connectives/#3488" class="Function">η-×</a> <a id="3552" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="3554" href="/Connectives/#3554" class="Bound">x</a> <a id="3556" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="3558" href="/Connectives/#3558" class="Bound">y</a> <a id="3560" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="3562" class="Symbol">=</a> <a id="3564" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a></pre>
+<p>The pattern matching on the left-hand side is essential, since
+replacing <code class="highlighter-rouge">w</code> by <code class="highlighter-rouge">⟨ x , y ⟩</code> allows both sides of the equation to
+simplify to the same term.</p>
+
+<p>We set the precedence of conjunction so that it binds less
+tightly than anything save disjunction:</p>
+<pre class="Agda"><a id="3849" class="Keyword">infixr</a> <a id="3856" class="Number">2</a> <a id="3858" href="/Connectives/#1164" class="Datatype Operator">_×_</a></pre>
+<p>Thus, <code class="highlighter-rouge">m ≤ n × n ≤ p</code> parses as <code class="highlighter-rouge">(m ≤ n) × (n ≤ p)</code>.</p>
+
+<p>Given two types <code class="highlighter-rouge">A</code> and <code class="highlighter-rouge">B</code>, we refer to <code class="highlighter-rouge">A x B</code> as the
+<em>product</em> of <code class="highlighter-rouge">A</code> and <code class="highlighter-rouge">B</code>.  In set theory, it is also sometimes
+called the <em>cartesian product</em>, and in computing it corresponds
+to a <em>record</em> type. Among other reasons for
+calling it the product, note that if type <code class="highlighter-rouge">A</code> has <code class="highlighter-rouge">m</code>
+distinct members, and type <code class="highlighter-rouge">B</code> has <code class="highlighter-rouge">n</code> distinct members,
+then the type <code class="highlighter-rouge">A × B</code> has <code class="highlighter-rouge">m * n</code> distinct members.
+For instance, consider a type <code class="highlighter-rouge">Bool</code> with two members, and
+a type <code class="highlighter-rouge">Tri</code> with three members:</p>
+<pre class="Agda"><a id="4422" class="Keyword">data</a> <a id="Bool"></a><a id="4427" href="/Connectives/#4427" class="Datatype">Bool</a> <a id="4432" class="Symbol">:</a> <a id="4434" class="PrimitiveType">Set</a> <a id="4438" class="Keyword">where</a>
+  <a id="Bool.true"></a><a id="4446" href="/Connectives/#4446" class="InductiveConstructor">true</a>  <a id="4452" class="Symbol">:</a> <a id="4454" href="/Connectives/#4427" class="Datatype">Bool</a>
+  <a id="Bool.false"></a><a id="4461" href="/Connectives/#4461" class="InductiveConstructor">false</a> <a id="4467" class="Symbol">:</a> <a id="4469" href="/Connectives/#4427" class="Datatype">Bool</a>
+
+<a id="4475" class="Keyword">data</a> <a id="Tri"></a><a id="4480" href="/Connectives/#4480" class="Datatype">Tri</a> <a id="4484" class="Symbol">:</a> <a id="4486" class="PrimitiveType">Set</a> <a id="4490" class="Keyword">where</a>
+  <a id="Tri.aa"></a><a id="4498" href="/Connectives/#4498" class="InductiveConstructor">aa</a> <a id="4501" class="Symbol">:</a> <a id="4503" href="/Connectives/#4480" class="Datatype">Tri</a>
+  <a id="Tri.bb"></a><a id="4509" href="/Connectives/#4509" class="InductiveConstructor">bb</a> <a id="4512" class="Symbol">:</a> <a id="4514" href="/Connectives/#4480" class="Datatype">Tri</a>
+  <a id="Tri.cc"></a><a id="4520" href="/Connectives/#4520" class="InductiveConstructor">cc</a> <a id="4523" class="Symbol">:</a> <a id="4525" href="/Connectives/#4480" class="Datatype">Tri</a></pre>
+<p>Then the type <code class="highlighter-rouge">Bool × Tri</code> has six members:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>⟨ true  , aa ⟩    ⟨ true  , bb ⟩    ⟨ true ,  cc ⟩
+⟨ false , aa ⟩    ⟨ false , bb ⟩    ⟨ false , cc ⟩
+</code></pre></div></div>
+
+<p>For example, the following function enumerates all
+possible arguments of type <code class="highlighter-rouge">Bool × Tri</code>:</p>
+<pre class="Agda"><a id="×-count"></a><a id="4801" href="/Connectives/#4801" class="Function">×-count</a> <a id="4809" class="Symbol">:</a> <a id="4811" href="/Connectives/#4427" class="Datatype">Bool</a> <a id="4816" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="4818" href="/Connectives/#4480" class="Datatype">Tri</a> <a id="4822" class="Symbol">→</a> <a id="4824" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a>
+<a id="4826" href="/Connectives/#4801" class="Function">×-count</a> <a id="4834" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="4836" href="/Connectives/#4446" class="InductiveConstructor">true</a>  <a id="4842" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="4844" href="/Connectives/#4498" class="InductiveConstructor">aa</a> <a id="4847" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a>  <a id="4850" class="Symbol">=</a>  <a id="4853" class="Number">1</a>
+<a id="4855" href="/Connectives/#4801" class="Function">×-count</a> <a id="4863" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="4865" href="/Connectives/#4446" class="InductiveConstructor">true</a>  <a id="4871" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="4873" href="/Connectives/#4509" class="InductiveConstructor">bb</a> <a id="4876" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a>  <a id="4879" class="Symbol">=</a>  <a id="4882" class="Number">2</a>
+<a id="4884" href="/Connectives/#4801" class="Function">×-count</a> <a id="4892" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="4894" href="/Connectives/#4446" class="InductiveConstructor">true</a>  <a id="4900" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="4902" href="/Connectives/#4520" class="InductiveConstructor">cc</a> <a id="4905" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a>  <a id="4908" class="Symbol">=</a>  <a id="4911" class="Number">3</a>
+<a id="4913" href="/Connectives/#4801" class="Function">×-count</a> <a id="4921" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="4923" href="/Connectives/#4461" class="InductiveConstructor">false</a> <a id="4929" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="4931" href="/Connectives/#4498" class="InductiveConstructor">aa</a> <a id="4934" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a>  <a id="4937" class="Symbol">=</a>  <a id="4940" class="Number">4</a>
+<a id="4942" href="/Connectives/#4801" class="Function">×-count</a> <a id="4950" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="4952" href="/Connectives/#4461" class="InductiveConstructor">false</a> <a id="4958" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="4960" href="/Connectives/#4509" class="InductiveConstructor">bb</a> <a id="4963" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a>  <a id="4966" class="Symbol">=</a>  <a id="4969" class="Number">5</a>
+<a id="4971" href="/Connectives/#4801" class="Function">×-count</a> <a id="4979" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="4981" href="/Connectives/#4461" class="InductiveConstructor">false</a> <a id="4987" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="4989" href="/Connectives/#4520" class="InductiveConstructor">cc</a> <a id="4992" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a>  <a id="4995" class="Symbol">=</a>  <a id="4998" class="Number">6</a></pre>
+
+<p>Product on types also shares a property with product on numbers in
+that there is a sense in which it is commutative and associative.  In
+particular, product is commutative and associative <em>up to
+isomorphism</em>.</p>
+
+<p>For commutativity, the <code class="highlighter-rouge">to</code> function swaps a pair, taking <code class="highlighter-rouge">(x , y)</code> to
+<code class="highlighter-rouge">(y , x)</code>, and the <code class="highlighter-rouge">from</code> function does the same (up to renaming).
+Instantiating the patterns correctly in <code class="highlighter-rouge">from∘to</code> and <code class="highlighter-rouge">to∘from</code> is essential.
+Replacing the definition of <code class="highlighter-rouge">from∘to</code> by <code class="highlighter-rouge">λ w → refl</code> will not work;
+and similarly for <code class="highlighter-rouge">to∘from</code>:</p>
+<pre class="Agda"><a id="×-comm"></a><a id="5549" href="/Connectives/#5549" class="Function">×-comm</a> <a id="5556" class="Symbol">:</a> <a id="5558" class="Symbol">∀</a> <a id="5560" class="Symbol">{</a><a id="5561" href="/Connectives/#5561" class="Bound">A</a> <a id="5563" href="/Connectives/#5563" class="Bound">B</a> <a id="5565" class="Symbol">:</a> <a id="5567" class="PrimitiveType">Set</a><a id="5570" class="Symbol">}</a> <a id="5572" class="Symbol">→</a> <a id="5574" href="/Connectives/#5561" class="Bound">A</a> <a id="5576" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="5578" href="/Connectives/#5563" class="Bound">B</a> <a id="5580" href="/Isomorphism/#4104" class="Record Operator">≃</a> <a id="5582" href="/Connectives/#5563" class="Bound">B</a> <a id="5584" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="5586" href="/Connectives/#5561" class="Bound">A</a>
+<a id="5588" href="/Connectives/#5549" class="Function">×-comm</a> <a id="5595" class="Symbol">=</a>
+  <a id="5599" class="Keyword">record</a>
+    <a id="5610" class="Symbol">{</a> <a id="5612" class="Field">to</a>       <a id="5621" class="Symbol">=</a>  <a id="5624" class="Symbol">λ{</a> <a id="5627" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="5629" href="/Connectives/#5629" class="Bound">x</a> <a id="5631" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="5633" href="/Connectives/#5633" class="Bound">y</a> <a id="5635" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="5637" class="Symbol">→</a> <a id="5639" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="5641" href="/Connectives/#5633" class="Bound">y</a> <a id="5643" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="5645" href="/Connectives/#5629" class="Bound">x</a> <a id="5647" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="5649" class="Symbol">}</a>
+    <a id="5655" class="Symbol">;</a> <a id="5657" class="Field">from</a>     <a id="5666" class="Symbol">=</a>  <a id="5669" class="Symbol">λ{</a> <a id="5672" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="5674" href="/Connectives/#5674" class="Bound">y</a> <a id="5676" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="5678" href="/Connectives/#5678" class="Bound">x</a> <a id="5680" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="5682" class="Symbol">→</a> <a id="5684" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="5686" href="/Connectives/#5678" class="Bound">x</a> <a id="5688" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="5690" href="/Connectives/#5674" class="Bound">y</a> <a id="5692" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="5694" class="Symbol">}</a>
+    <a id="5700" class="Symbol">;</a> <a id="5702" class="Field">from∘to</a>  <a id="5711" class="Symbol">=</a>  <a id="5714" class="Symbol">λ{</a> <a id="5717" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="5719" href="/Connectives/#5719" class="Bound">x</a> <a id="5721" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="5723" href="/Connectives/#5723" class="Bound">y</a> <a id="5725" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="5727" class="Symbol">→</a> <a id="5729" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a> <a id="5734" class="Symbol">}</a>
+    <a id="5740" class="Symbol">;</a> <a id="5742" class="Field">to∘from</a>  <a id="5751" class="Symbol">=</a>  <a id="5754" class="Symbol">λ{</a> <a id="5757" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="5759" href="/Connectives/#5759" class="Bound">y</a> <a id="5761" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="5763" href="/Connectives/#5763" class="Bound">x</a> <a id="5765" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="5767" class="Symbol">→</a> <a id="5769" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a> <a id="5774" class="Symbol">}</a>
+    <a id="5780" class="Symbol">}</a></pre>
+
+<p>Being <em>commutative</em> is different from being <em>commutative up to
+isomorphism</em>.  Compare the two statements:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>m * n ≡ n * m
+A × B ≃ B × A
+</code></pre></div></div>
+
+<p>In the first case, we might have that <code class="highlighter-rouge">m</code> is <code class="highlighter-rouge">2</code> and <code class="highlighter-rouge">n</code> is <code class="highlighter-rouge">3</code>, and
+both <code class="highlighter-rouge">m * n</code> and <code class="highlighter-rouge">n * m</code> are equal to <code class="highlighter-rouge">6</code>.  In the second case, we
+might have that <code class="highlighter-rouge">A</code> is <code class="highlighter-rouge">Bool</code> and <code class="highlighter-rouge">B</code> is <code class="highlighter-rouge">Tri</code>, and <code class="highlighter-rouge">Bool × Tri</code> is
+<em>not</em> the same as <code class="highlighter-rouge">Tri × Bool</code>.  But there is an isomorphism between
+the two types.  For instance, <code class="highlighter-rouge">(true , aa)</code>, which is a member of the
+former, corresponds to <code class="highlighter-rouge">(aa , true)</code>, which is a member of the latter.</p>
+
+<p>For associativity, the <code class="highlighter-rouge">to</code> function reassociates two uses of pairing,
+taking <code class="highlighter-rouge">((x , y) , z)</code> to <code class="highlighter-rouge">(x , (y , z))</code>, and the <code class="highlighter-rouge">from</code> function does
+the inverse.  Again, the evidence of left and right inverse requires
+matching against a suitable pattern to enable simplification:</p>
+<pre class="Agda"><a id="×-assoc"></a><a id="6640" href="/Connectives/#6640" class="Function">×-assoc</a> <a id="6648" class="Symbol">:</a> <a id="6650" class="Symbol">∀</a> <a id="6652" class="Symbol">{</a><a id="6653" href="/Connectives/#6653" class="Bound">A</a> <a id="6655" href="/Connectives/#6655" class="Bound">B</a> <a id="6657" href="/Connectives/#6657" class="Bound">C</a> <a id="6659" class="Symbol">:</a> <a id="6661" class="PrimitiveType">Set</a><a id="6664" class="Symbol">}</a> <a id="6666" class="Symbol">→</a> <a id="6668" class="Symbol">(</a><a id="6669" href="/Connectives/#6653" class="Bound">A</a> <a id="6671" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="6673" href="/Connectives/#6655" class="Bound">B</a><a id="6674" class="Symbol">)</a> <a id="6676" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="6678" href="/Connectives/#6657" class="Bound">C</a> <a id="6680" href="/Isomorphism/#4104" class="Record Operator">≃</a> <a id="6682" href="/Connectives/#6653" class="Bound">A</a> <a id="6684" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="6686" class="Symbol">(</a><a id="6687" href="/Connectives/#6655" class="Bound">B</a> <a id="6689" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="6691" href="/Connectives/#6657" class="Bound">C</a><a id="6692" class="Symbol">)</a>
+<a id="6694" href="/Connectives/#6640" class="Function">×-assoc</a> <a id="6702" class="Symbol">=</a>
+  <a id="6706" class="Keyword">record</a>
+    <a id="6717" class="Symbol">{</a> <a id="6719" class="Field">to</a>      <a id="6727" class="Symbol">=</a> <a id="6729" class="Symbol">λ{</a> <a id="6732" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="6734" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="6736" href="/Connectives/#6736" class="Bound">x</a> <a id="6738" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="6740" href="/Connectives/#6740" class="Bound">y</a> <a id="6742" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="6744" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="6746" href="/Connectives/#6746" class="Bound">z</a> <a id="6748" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="6750" class="Symbol">→</a> <a id="6752" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="6754" href="/Connectives/#6736" class="Bound">x</a> <a id="6756" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="6758" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="6760" href="/Connectives/#6740" class="Bound">y</a> <a id="6762" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="6764" href="/Connectives/#6746" class="Bound">z</a> <a id="6766" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="6768" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="6770" class="Symbol">}</a>
+    <a id="6776" class="Symbol">;</a> <a id="6778" class="Field">from</a>    <a id="6786" class="Symbol">=</a> <a id="6788" class="Symbol">λ{</a> <a id="6791" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="6793" href="/Connectives/#6793" class="Bound">x</a> <a id="6795" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="6797" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="6799" href="/Connectives/#6799" class="Bound">y</a> <a id="6801" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="6803" href="/Connectives/#6803" class="Bound">z</a> <a id="6805" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="6807" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="6809" class="Symbol">→</a> <a id="6811" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="6813" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="6815" href="/Connectives/#6793" class="Bound">x</a> <a id="6817" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="6819" href="/Connectives/#6799" class="Bound">y</a> <a id="6821" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="6823" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="6825" href="/Connectives/#6803" class="Bound">z</a> <a id="6827" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="6829" class="Symbol">}</a>
+    <a id="6835" class="Symbol">;</a> <a id="6837" class="Field">from∘to</a> <a id="6845" class="Symbol">=</a> <a id="6847" class="Symbol">λ{</a> <a id="6850" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="6852" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="6854" href="/Connectives/#6854" class="Bound">x</a> <a id="6856" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="6858" href="/Connectives/#6858" class="Bound">y</a> <a id="6860" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="6862" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="6864" href="/Connectives/#6864" class="Bound">z</a> <a id="6866" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="6868" class="Symbol">→</a> <a id="6870" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a> <a id="6875" class="Symbol">}</a>
+    <a id="6881" class="Symbol">;</a> <a id="6883" class="Field">to∘from</a> <a id="6891" class="Symbol">=</a> <a id="6893" class="Symbol">λ{</a> <a id="6896" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="6898" href="/Connectives/#6898" class="Bound">x</a> <a id="6900" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="6902" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="6904" href="/Connectives/#6904" class="Bound">y</a> <a id="6906" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="6908" href="/Connectives/#6908" class="Bound">z</a> <a id="6910" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="6912" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="6914" class="Symbol">→</a> <a id="6916" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a> <a id="6921" class="Symbol">}</a>
+    <a id="6927" class="Symbol">}</a></pre>
+
+<p>Being <em>associative</em> is not the same as being <em>associative
+up to isomorphism</em>.  Compare the two statements:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(m * n) * p ≡ m * (n * p)
+(A × B) × C ≃ A × (B × C)
+</code></pre></div></div>
+
+<p>For example, the type <code class="highlighter-rouge">(ℕ × Bool) × Tri</code> is <em>not</em> the same as <code class="highlighter-rouge">ℕ ×
+(Bool × Tri)</code>. But there is an isomorphism between the two types. For
+instance <code class="highlighter-rouge">((1 , true) , aa)</code>, which is a member of the former,
+corresponds to <code class="highlighter-rouge">(1 , (true , aa))</code>, which is a member of the latter.</p>
+
+<h4 id="exercise--recommended">Exercise <code class="highlighter-rouge">⇔≃×</code> (recommended)</h4>
+
+<p>Show that <code class="highlighter-rouge">A ⇔ B</code> as defined <a href="/Isomorphism/#iff">earlier</a>
+is isomorphic to <code class="highlighter-rouge">(A → B) × (B → A)</code>.</p>
+
+<h2 id="truth-is-unit">Truth is unit</h2>
+
+<p>Truth <code class="highlighter-rouge">⊤</code> always holds. We formalise this idea by
+declaring a suitable inductive type:</p>
+<pre class="Agda"><a id="7634" class="Keyword">data</a> <a id="⊤"></a><a id="7639" href="/Connectives/#7639" class="Datatype">⊤</a> <a id="7641" class="Symbol">:</a> <a id="7643" class="PrimitiveType">Set</a> <a id="7647" class="Keyword">where</a>
+
+  <a id="⊤.tt"></a><a id="7656" href="/Connectives/#7656" class="InductiveConstructor">tt</a> <a id="7659" class="Symbol">:</a>
+    <a id="7665" class="Comment">--</a>
+    <a id="7672" href="/Connectives/#7639" class="Datatype">⊤</a></pre>
+<p>Evidence that <code class="highlighter-rouge">⊤</code> holds is of the form <code class="highlighter-rouge">tt</code>.</p>
+
+<p>There is an introduction rule, but no elimination rule.
+Given evidence that <code class="highlighter-rouge">⊤</code> holds, there is nothing more of interest we
+can conclude.  Since truth always holds, knowing that it holds tells
+us nothing new.</p>
+
+<p>The nullary case of <code class="highlighter-rouge">η-×</code> is <code class="highlighter-rouge">η-⊤</code>, which asserts that any
+value of type <code class="highlighter-rouge">⊤</code> must be equal to <code class="highlighter-rouge">tt</code>:</p>
+<pre class="Agda"><a id="η-⊤"></a><a id="8054" href="/Connectives/#8054" class="Function">η-⊤</a> <a id="8058" class="Symbol">:</a> <a id="8060" class="Symbol">∀</a> <a id="8062" class="Symbol">(</a><a id="8063" href="/Connectives/#8063" class="Bound">w</a> <a id="8065" class="Symbol">:</a> <a id="8067" href="/Connectives/#7639" class="Datatype">⊤</a><a id="8068" class="Symbol">)</a> <a id="8070" class="Symbol">→</a> <a id="8072" href="/Connectives/#7656" class="InductiveConstructor">tt</a> <a id="8075" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#83" class="Datatype Operator">≡</a> <a id="8077" href="/Connectives/#8063" class="Bound">w</a>
+<a id="8079" href="/Connectives/#8054" class="Function">η-⊤</a> <a id="8083" href="/Connectives/#7656" class="InductiveConstructor">tt</a> <a id="8086" class="Symbol">=</a> <a id="8088" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a></pre>
+<p>The pattern matching on the left-hand side is essential.  Replacing
+<code class="highlighter-rouge">w</code> by <code class="highlighter-rouge">tt</code> allows both sides of the equation to simplify to the
+same term.</p>
+
+<p>We refer to <code class="highlighter-rouge">⊤</code> as the <em>unit</em> type. And, indeed,
+type <code class="highlighter-rouge">⊤</code> has exactly once member, <code class="highlighter-rouge">tt</code>.  For example, the following
+function enumerates all possible arguments of type <code class="highlighter-rouge">⊤</code>:</p>
+<pre class="Agda"><a id="⊤-count"></a><a id="8435" href="/Connectives/#8435" class="Function">⊤-count</a> <a id="8443" class="Symbol">:</a> <a id="8445" href="/Connectives/#7639" class="Datatype">⊤</a> <a id="8447" class="Symbol">→</a> <a id="8449" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a>
+<a id="8451" href="/Connectives/#8435" class="Function">⊤-count</a> <a id="8459" href="/Connectives/#7656" class="InductiveConstructor">tt</a> <a id="8462" class="Symbol">=</a> <a id="8464" class="Number">1</a></pre>
+
+<p>For numbers, one is the identity of multiplication. Correspondingly,
+unit is the identity of product <em>up to isomorphism</em>.  For left
+identity, the <code class="highlighter-rouge">to</code> function takes <code class="highlighter-rouge">(tt , x)</code> to <code class="highlighter-rouge">x</code>, and the <code class="highlighter-rouge">from</code>
+function does the inverse.  The evidence of left inverse requires
+matching against a suitable pattern to enable simplification:</p>
+<pre class="Agda"><a id="⊤-identityˡ"></a><a id="8819" href="/Connectives/#8819" class="Function">⊤-identityˡ</a> <a id="8831" class="Symbol">:</a> <a id="8833" class="Symbol">∀</a> <a id="8835" class="Symbol">{</a><a id="8836" href="/Connectives/#8836" class="Bound">A</a> <a id="8838" class="Symbol">:</a> <a id="8840" class="PrimitiveType">Set</a><a id="8843" class="Symbol">}</a> <a id="8845" class="Symbol">→</a> <a id="8847" href="/Connectives/#7639" class="Datatype">⊤</a> <a id="8849" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="8851" href="/Connectives/#8836" class="Bound">A</a> <a id="8853" href="/Isomorphism/#4104" class="Record Operator">≃</a> <a id="8855" href="/Connectives/#8836" class="Bound">A</a>
+<a id="8857" href="/Connectives/#8819" class="Function">⊤-identityˡ</a> <a id="8869" class="Symbol">=</a>
+  <a id="8873" class="Keyword">record</a>
+    <a id="8884" class="Symbol">{</a> <a id="8886" class="Field">to</a>      <a id="8894" class="Symbol">=</a> <a id="8896" class="Symbol">λ{</a> <a id="8899" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="8901" href="/Connectives/#7656" class="InductiveConstructor">tt</a> <a id="8904" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="8906" href="/Connectives/#8906" class="Bound">x</a> <a id="8908" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="8910" class="Symbol">→</a> <a id="8912" href="/Connectives/#8906" class="Bound">x</a> <a id="8914" class="Symbol">}</a>
+    <a id="8920" class="Symbol">;</a> <a id="8922" class="Field">from</a>    <a id="8930" class="Symbol">=</a> <a id="8932" class="Symbol">λ{</a> <a id="8935" href="/Connectives/#8935" class="Bound">x</a> <a id="8937" class="Symbol">→</a> <a id="8939" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="8941" href="/Connectives/#7656" class="InductiveConstructor">tt</a> <a id="8944" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="8946" href="/Connectives/#8935" class="Bound">x</a> <a id="8948" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="8950" class="Symbol">}</a>
+    <a id="8956" class="Symbol">;</a> <a id="8958" class="Field">from∘to</a> <a id="8966" class="Symbol">=</a> <a id="8968" class="Symbol">λ{</a> <a id="8971" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="8973" href="/Connectives/#7656" class="InductiveConstructor">tt</a> <a id="8976" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="8978" href="/Connectives/#8978" class="Bound">x</a> <a id="8980" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="8982" class="Symbol">→</a> <a id="8984" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a> <a id="8989" class="Symbol">}</a>
+    <a id="8995" class="Symbol">;</a> <a id="8997" class="Field">to∘from</a> <a id="9005" class="Symbol">=</a> <a id="9007" class="Symbol">λ{</a> <a id="9010" href="/Connectives/#9010" class="Bound">x</a> <a id="9012" class="Symbol">→</a> <a id="9014" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a> <a id="9019" class="Symbol">}</a>
+    <a id="9025" class="Symbol">}</a></pre>
+
+<p>Having an <em>identity</em> is different from having an identity
+<em>up to isomorphism</em>.  Compare the two statements:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1 * m ≡ m
+⊤ × A ≃ A
+</code></pre></div></div>
+
+<p>In the first case, we might have that <code class="highlighter-rouge">m</code> is <code class="highlighter-rouge">2</code>, and both
+<code class="highlighter-rouge">1 * m</code> and <code class="highlighter-rouge">m</code> are equal to <code class="highlighter-rouge">2</code>.  In the second
+case, we might have that <code class="highlighter-rouge">A</code> is <code class="highlighter-rouge">Bool</code>, and <code class="highlighter-rouge">⊤ × Bool</code> is <em>not</em> the
+same as <code class="highlighter-rouge">Bool</code>.  But there is an isomorphism between the two types.
+For instance, <code class="highlighter-rouge">(tt, true)</code>, which is a member of the former,
+corresponds to <code class="highlighter-rouge">true</code>, which is a member of the latter.</p>
+
+<p>Right identity follows from commutativity of product and left identity:</p>
+<pre class="Agda"><a id="⊤-identityʳ"></a><a id="9624" href="/Connectives/#9624" class="Function">⊤-identityʳ</a> <a id="9636" class="Symbol">:</a> <a id="9638" class="Symbol">∀</a> <a id="9640" class="Symbol">{</a><a id="9641" href="/Connectives/#9641" class="Bound">A</a> <a id="9643" class="Symbol">:</a> <a id="9645" class="PrimitiveType">Set</a><a id="9648" class="Symbol">}</a> <a id="9650" class="Symbol">→</a> <a id="9652" class="Symbol">(</a><a id="9653" href="/Connectives/#9641" class="Bound">A</a> <a id="9655" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="9657" href="/Connectives/#7639" class="Datatype">⊤</a><a id="9658" class="Symbol">)</a> <a id="9660" href="/Isomorphism/#4104" class="Record Operator">≃</a> <a id="9662" href="/Connectives/#9641" class="Bound">A</a>
+<a id="9664" href="/Connectives/#9624" class="Function">⊤-identityʳ</a> <a id="9676" class="Symbol">{</a><a id="9677" href="/Connectives/#9677" class="Bound">A</a><a id="9678" class="Symbol">}</a> <a id="9680" class="Symbol">=</a>
+  <a id="9684" href="/Isomorphism/#8316" class="Function Operator">≃-begin</a>
+    <a id="9696" class="Symbol">(</a><a id="9697" href="/Connectives/#9677" class="Bound">A</a> <a id="9699" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="9701" href="/Connectives/#7639" class="Datatype">⊤</a><a id="9702" class="Symbol">)</a>
+  <a id="9706" href="/Isomorphism/#8400" class="Function Operator">≃⟨</a> <a id="9709" href="/Connectives/#5549" class="Function">×-comm</a> <a id="9716" href="/Isomorphism/#8400" class="Function Operator">⟩</a>
+    <a id="9722" class="Symbol">(</a><a id="9723" href="/Connectives/#7639" class="Datatype">⊤</a> <a id="9725" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="9727" href="/Connectives/#9677" class="Bound">A</a><a id="9728" class="Symbol">)</a>
+  <a id="9732" href="/Isomorphism/#8400" class="Function Operator">≃⟨</a> <a id="9735" href="/Connectives/#8819" class="Function">⊤-identityˡ</a> <a id="9747" href="/Isomorphism/#8400" class="Function Operator">⟩</a>
+    <a id="9753" href="/Connectives/#9677" class="Bound">A</a>
+  <a id="9757" href="/Isomorphism/#8519" class="Function Operator">≃-∎</a></pre>
+<p>Here we have used a chain of isomorphisms, analogous to that used for
+equality.</p>
+
+<h2 id="disjunction-is-sum">Disjunction is sum</h2>
+
+<p>Given two propositions <code class="highlighter-rouge">A</code> and <code class="highlighter-rouge">B</code>, the disjunction <code class="highlighter-rouge">A ⊎ B</code> holds
+if either <code class="highlighter-rouge">A</code> holds or <code class="highlighter-rouge">B</code> holds.  We formalise this idea by
+declaring a suitable inductive type:</p>
+<pre class="Agda"><a id="10054" class="Keyword">data</a> <a id="_⊎_"></a><a id="10059" href="/Connectives/#10059" class="Datatype Operator">_⊎_</a> <a id="10063" class="Symbol">:</a> <a id="10065" class="PrimitiveType">Set</a> <a id="10069" class="Symbol">→</a> <a id="10071" class="PrimitiveType">Set</a> <a id="10075" class="Symbol">→</a> <a id="10077" class="PrimitiveType">Set</a> <a id="10081" class="Keyword">where</a>
+
+  <a id="_⊎_.inj₁"></a><a id="10090" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="10095" class="Symbol">:</a> <a id="10097" class="Symbol">∀</a> <a id="10099" class="Symbol">{</a><a id="10100" href="/Connectives/#10100" class="Bound">A</a> <a id="10102" href="/Connectives/#10102" class="Bound">B</a> <a id="10104" class="Symbol">:</a> <a id="10106" class="PrimitiveType">Set</a><a id="10109" class="Symbol">}</a>
+    <a id="10115" class="Symbol">→</a> <a id="10117" href="/Connectives/#10100" class="Bound">A</a>
+      <a id="10125" class="Comment">-----</a>
+    <a id="10135" class="Symbol">→</a> <a id="10137" href="/Connectives/#10100" class="Bound">A</a> <a id="10139" href="/Connectives/#10059" class="Datatype Operator">⊎</a> <a id="10141" href="/Connectives/#10102" class="Bound">B</a>
+
+  <a id="_⊎_.inj₂"></a><a id="10146" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="10151" class="Symbol">:</a> <a id="10153" class="Symbol">∀</a> <a id="10155" class="Symbol">{</a><a id="10156" href="/Connectives/#10156" class="Bound">A</a> <a id="10158" href="/Connectives/#10158" class="Bound">B</a> <a id="10160" class="Symbol">:</a> <a id="10162" class="PrimitiveType">Set</a><a id="10165" class="Symbol">}</a>
+    <a id="10171" class="Symbol">→</a> <a id="10173" href="/Connectives/#10158" class="Bound">B</a>
+      <a id="10181" class="Comment">-----</a>
+    <a id="10191" class="Symbol">→</a> <a id="10193" href="/Connectives/#10156" class="Bound">A</a> <a id="10195" href="/Connectives/#10059" class="Datatype Operator">⊎</a> <a id="10197" href="/Connectives/#10158" class="Bound">B</a></pre>
+<p>Evidence that <code class="highlighter-rouge">A ⊎ B</code> holds is either of the form <code class="highlighter-rouge">inj₁ M</code>, where <code class="highlighter-rouge">M</code>
+provides evidence that <code class="highlighter-rouge">A</code> holds, or <code class="highlighter-rouge">inj₂ N</code>, where <code class="highlighter-rouge">N</code> provides
+evidence that <code class="highlighter-rouge">B</code> holds.</p>
+
+<p>Given evidence that <code class="highlighter-rouge">A → C</code> and <code class="highlighter-rouge">B → C</code> both hold, then given
+evidence that <code class="highlighter-rouge">A ⊎ B</code> holds we can conclude that <code class="highlighter-rouge">C</code> holds:</p>
+<pre class="Agda"><a id="case-⊎"></a><a id="10507" href="/Connectives/#10507" class="Function">case-⊎</a> <a id="10514" class="Symbol">:</a> <a id="10516" class="Symbol">∀</a> <a id="10518" class="Symbol">{</a><a id="10519" href="/Connectives/#10519" class="Bound">A</a> <a id="10521" href="/Connectives/#10521" class="Bound">B</a> <a id="10523" href="/Connectives/#10523" class="Bound">C</a> <a id="10525" class="Symbol">:</a> <a id="10527" class="PrimitiveType">Set</a><a id="10530" class="Symbol">}</a>
+  <a id="10534" class="Symbol">→</a> <a id="10536" class="Symbol">(</a><a id="10537" href="/Connectives/#10519" class="Bound">A</a> <a id="10539" class="Symbol">→</a> <a id="10541" href="/Connectives/#10523" class="Bound">C</a><a id="10542" class="Symbol">)</a>
+  <a id="10546" class="Symbol">→</a> <a id="10548" class="Symbol">(</a><a id="10549" href="/Connectives/#10521" class="Bound">B</a> <a id="10551" class="Symbol">→</a> <a id="10553" href="/Connectives/#10523" class="Bound">C</a><a id="10554" class="Symbol">)</a>
+  <a id="10558" class="Symbol">→</a> <a id="10560" href="/Connectives/#10519" class="Bound">A</a> <a id="10562" href="/Connectives/#10059" class="Datatype Operator">⊎</a> <a id="10564" href="/Connectives/#10521" class="Bound">B</a>
+    <a id="10570" class="Comment">-----------</a>
+  <a id="10584" class="Symbol">→</a> <a id="10586" href="/Connectives/#10523" class="Bound">C</a>
+<a id="10588" href="/Connectives/#10507" class="Function">case-⊎</a> <a id="10595" href="/Connectives/#10595" class="Bound">f</a> <a id="10597" href="/Connectives/#10597" class="Bound">g</a> <a id="10599" class="Symbol">(</a><a id="10600" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="10605" href="/Connectives/#10605" class="Bound">x</a><a id="10606" class="Symbol">)</a> <a id="10608" class="Symbol">=</a> <a id="10610" href="/Connectives/#10595" class="Bound">f</a> <a id="10612" href="/Connectives/#10605" class="Bound">x</a>
+<a id="10614" href="/Connectives/#10507" class="Function">case-⊎</a> <a id="10621" href="/Connectives/#10621" class="Bound">f</a> <a id="10623" href="/Connectives/#10623" class="Bound">g</a> <a id="10625" class="Symbol">(</a><a id="10626" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="10631" href="/Connectives/#10631" class="Bound">y</a><a id="10632" class="Symbol">)</a> <a id="10634" class="Symbol">=</a> <a id="10636" href="/Connectives/#10623" class="Bound">g</a> <a id="10638" href="/Connectives/#10631" class="Bound">y</a></pre>
+<p>Pattern matching against <code class="highlighter-rouge">inj₁</code> and <code class="highlighter-rouge">inj₂</code> is typical of how we exploit
+evidence that a disjunction holds.</p>
+
+<p>When <code class="highlighter-rouge">inj₁</code> and <code class="highlighter-rouge">inj₂</code> appear on the right-hand side of an equation we
+refer to them as <em>constructors</em>, and when they appears on the
+left-hand side we refer to them as <em>destructors</em>.  We also refer to
+<code class="highlighter-rouge">case-⊎</code> as a destructor, since it plays a similar role.  Other
+terminology refers to <code class="highlighter-rouge">inj₁</code> and <code class="highlighter-rouge">inj₂</code> as <em>introducing</em> a
+disjunction, and to <code class="highlighter-rouge">case-⊎</code> as <em>eliminating</em> a disjunction; indeed
+the former are sometimes given the names <code class="highlighter-rouge">⊎-I₁</code> and <code class="highlighter-rouge">⊎-I₂</code> and the
+latter the name <code class="highlighter-rouge">⊎-E</code>.</p>
+
+<p>Applying the destructor to each of the constructors is the identity:</p>
+<pre class="Agda"><a id="η-⊎"></a><a id="11324" href="/Connectives/#11324" class="Function">η-⊎</a> <a id="11328" class="Symbol">:</a> <a id="11330" class="Symbol">∀</a> <a id="11332" class="Symbol">{</a><a id="11333" href="/Connectives/#11333" class="Bound">A</a> <a id="11335" href="/Connectives/#11335" class="Bound">B</a> <a id="11337" class="Symbol">:</a> <a id="11339" class="PrimitiveType">Set</a><a id="11342" class="Symbol">}</a> <a id="11344" class="Symbol">(</a><a id="11345" href="/Connectives/#11345" class="Bound">w</a> <a id="11347" class="Symbol">:</a> <a id="11349" href="/Connectives/#11333" class="Bound">A</a> <a id="11351" href="/Connectives/#10059" class="Datatype Operator">⊎</a> <a id="11353" href="/Connectives/#11335" class="Bound">B</a><a id="11354" class="Symbol">)</a> <a id="11356" class="Symbol">→</a> <a id="11358" href="/Connectives/#10507" class="Function">case-⊎</a> <a id="11365" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="11370" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="11375" href="/Connectives/#11345" class="Bound">w</a> <a id="11377" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#83" class="Datatype Operator">≡</a> <a id="11379" href="/Connectives/#11345" class="Bound">w</a>
+<a id="11381" href="/Connectives/#11324" class="Function">η-⊎</a> <a id="11385" class="Symbol">(</a><a id="11386" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="11391" href="/Connectives/#11391" class="Bound">x</a><a id="11392" class="Symbol">)</a> <a id="11394" class="Symbol">=</a> <a id="11396" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a>
+<a id="11401" href="/Connectives/#11324" class="Function">η-⊎</a> <a id="11405" class="Symbol">(</a><a id="11406" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="11411" href="/Connectives/#11411" class="Bound">y</a><a id="11412" class="Symbol">)</a> <a id="11414" class="Symbol">=</a> <a id="11416" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a></pre>
+<p>More generally, we can also throw in an arbitrary function from a disjunction:</p>
+<pre class="Agda"><a id="uniq-⊎"></a><a id="11524" href="/Connectives/#11524" class="Function">uniq-⊎</a> <a id="11531" class="Symbol">:</a> <a id="11533" class="Symbol">∀</a> <a id="11535" class="Symbol">{</a><a id="11536" href="/Connectives/#11536" class="Bound">A</a> <a id="11538" href="/Connectives/#11538" class="Bound">B</a> <a id="11540" href="/Connectives/#11540" class="Bound">C</a> <a id="11542" class="Symbol">:</a> <a id="11544" class="PrimitiveType">Set</a><a id="11547" class="Symbol">}</a> <a id="11549" class="Symbol">(</a><a id="11550" href="/Connectives/#11550" class="Bound">h</a> <a id="11552" class="Symbol">:</a> <a id="11554" href="/Connectives/#11536" class="Bound">A</a> <a id="11556" href="/Connectives/#10059" class="Datatype Operator">⊎</a> <a id="11558" href="/Connectives/#11538" class="Bound">B</a> <a id="11560" class="Symbol">→</a> <a id="11562" href="/Connectives/#11540" class="Bound">C</a><a id="11563" class="Symbol">)</a> <a id="11565" class="Symbol">(</a><a id="11566" href="/Connectives/#11566" class="Bound">w</a> <a id="11568" class="Symbol">:</a> <a id="11570" href="/Connectives/#11536" class="Bound">A</a> <a id="11572" href="/Connectives/#10059" class="Datatype Operator">⊎</a> <a id="11574" href="/Connectives/#11538" class="Bound">B</a><a id="11575" class="Symbol">)</a> <a id="11577" class="Symbol">→</a>
+  <a id="11581" href="/Connectives/#10507" class="Function">case-⊎</a> <a id="11588" class="Symbol">(</a><a id="11589" href="/Connectives/#11550" class="Bound">h</a> <a id="11591" href="https://agda.github.io/agda-stdlib/Function.html#769" class="Function Operator">∘</a> <a id="11593" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a><a id="11597" class="Symbol">)</a> <a id="11599" class="Symbol">(</a><a id="11600" href="/Connectives/#11550" class="Bound">h</a> <a id="11602" href="https://agda.github.io/agda-stdlib/Function.html#769" class="Function Operator">∘</a> <a id="11604" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a><a id="11608" class="Symbol">)</a> <a id="11610" href="/Connectives/#11566" class="Bound">w</a> <a id="11612" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#83" class="Datatype Operator">≡</a> <a id="11614" href="/Connectives/#11550" class="Bound">h</a> <a id="11616" href="/Connectives/#11566" class="Bound">w</a>
+<a id="11618" href="/Connectives/#11524" class="Function">uniq-⊎</a> <a id="11625" href="/Connectives/#11625" class="Bound">h</a> <a id="11627" class="Symbol">(</a><a id="11628" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="11633" href="/Connectives/#11633" class="Bound">x</a><a id="11634" class="Symbol">)</a> <a id="11636" class="Symbol">=</a> <a id="11638" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a>
+<a id="11643" href="/Connectives/#11524" class="Function">uniq-⊎</a> <a id="11650" href="/Connectives/#11650" class="Bound">h</a> <a id="11652" class="Symbol">(</a><a id="11653" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="11658" href="/Connectives/#11658" class="Bound">y</a><a id="11659" class="Symbol">)</a> <a id="11661" class="Symbol">=</a> <a id="11663" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a></pre>
+<p>The pattern matching on the left-hand side is essential.  Replacing
+<code class="highlighter-rouge">w</code> by <code class="highlighter-rouge">inj₁ x</code> allows both sides of the equation to simplify to the
+same term, and similarly for <code class="highlighter-rouge">inj₂ y</code>.</p>
+
+<p>We set the precedence of disjunction so that it binds less tightly
+than any other declared operator:</p>
+<pre class="Agda"><a id="11970" class="Keyword">infix</a> <a id="11976" class="Number">1</a> <a id="11978" href="/Connectives/#10059" class="Datatype Operator">_⊎_</a></pre>
+<p>Thus, <code class="highlighter-rouge">A × C ⊎ B × C</code> parses as <code class="highlighter-rouge">(A × C) ⊎ (B × C)</code>.</p>
+
+<p>Given two types <code class="highlighter-rouge">A</code> and <code class="highlighter-rouge">B</code>, we refer to <code class="highlighter-rouge">A ⊎ B</code> as the
+<em>sum</em> of <code class="highlighter-rouge">A</code> and <code class="highlighter-rouge">B</code>.  In set theory, it is also sometimes
+called the <em>disjoint union</em>, and in computing it corresponds
+to a <em>variant record</em> type. Among other reasons for
+calling it the sum, note that if type <code class="highlighter-rouge">A</code> has <code class="highlighter-rouge">m</code>
+distinct members, and type <code class="highlighter-rouge">B</code> has <code class="highlighter-rouge">n</code> distinct members,
+then the type <code class="highlighter-rouge">A ⊎ B</code> has <code class="highlighter-rouge">m + n</code> distinct members.
+For instance, consider a type <code class="highlighter-rouge">Bool</code> with two members, and
+a type <code class="highlighter-rouge">Tri</code> with three members, as defined earlier.
+Then the type <code class="highlighter-rouge">Bool ⊎ Tri</code> has five
+members:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>inj₁ true     inj₂ aa
+inj₁ false    inj₂ bb
+              inj₂ cc
+</code></pre></div></div>
+
+<p>For example, the following function enumerates all
+possible arguments of type <code class="highlighter-rouge">Bool ⊎ Tri</code>:</p>
+<pre class="Agda"><a id="⊎-count"></a><a id="12776" href="/Connectives/#12776" class="Function">⊎-count</a> <a id="12784" class="Symbol">:</a> <a id="12786" href="/Connectives/#4427" class="Datatype">Bool</a> <a id="12791" href="/Connectives/#10059" class="Datatype Operator">⊎</a> <a id="12793" href="/Connectives/#4480" class="Datatype">Tri</a> <a id="12797" class="Symbol">→</a> <a id="12799" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a>
+<a id="12801" href="/Connectives/#12776" class="Function">⊎-count</a> <a id="12809" class="Symbol">(</a><a id="12810" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="12815" href="/Connectives/#4446" class="InductiveConstructor">true</a><a id="12819" class="Symbol">)</a>   <a id="12823" class="Symbol">=</a>  <a id="12826" class="Number">1</a>
+<a id="12828" href="/Connectives/#12776" class="Function">⊎-count</a> <a id="12836" class="Symbol">(</a><a id="12837" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="12842" href="/Connectives/#4461" class="InductiveConstructor">false</a><a id="12847" class="Symbol">)</a>  <a id="12850" class="Symbol">=</a>  <a id="12853" class="Number">2</a>
+<a id="12855" href="/Connectives/#12776" class="Function">⊎-count</a> <a id="12863" class="Symbol">(</a><a id="12864" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="12869" href="/Connectives/#4498" class="InductiveConstructor">aa</a><a id="12871" class="Symbol">)</a>     <a id="12877" class="Symbol">=</a>  <a id="12880" class="Number">3</a>
+<a id="12882" href="/Connectives/#12776" class="Function">⊎-count</a> <a id="12890" class="Symbol">(</a><a id="12891" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="12896" href="/Connectives/#4509" class="InductiveConstructor">bb</a><a id="12898" class="Symbol">)</a>     <a id="12904" class="Symbol">=</a>  <a id="12907" class="Number">4</a>
+<a id="12909" href="/Connectives/#12776" class="Function">⊎-count</a> <a id="12917" class="Symbol">(</a><a id="12918" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="12923" href="/Connectives/#4520" class="InductiveConstructor">cc</a><a id="12925" class="Symbol">)</a>     <a id="12931" class="Symbol">=</a>  <a id="12934" class="Number">5</a></pre>
+
+<p>Sum on types also shares a property with sum on numbers in that it is
+commutative and associative <em>up to isomorphism</em>.</p>
+
+<h4 id="exercise--comm-recommended">Exercise <code class="highlighter-rouge">⊎-comm</code> (recommended)</h4>
+
+<p>Show sum is commutative up to isomorphism.</p>
+
+<h4 id="exercise--assoc">Exercise <code class="highlighter-rouge">⊎-assoc</code></h4>
+
+<p>Show sum is associative up to ismorphism.</p>
+
+<h2 id="false-is-empty">False is empty</h2>
+
+<p>False <code class="highlighter-rouge">⊥</code> never holds.  We formalise this idea by declaring
+a suitable inductive type:</p>
+<pre class="Agda"><a id="13338" class="Keyword">data</a> <a id="⊥"></a><a id="13343" href="/Connectives/#13343" class="Datatype">⊥</a> <a id="13345" class="Symbol">:</a> <a id="13347" class="PrimitiveType">Set</a> <a id="13351" class="Keyword">where</a>
+  <a id="13359" class="Comment">-- no clauses!</a></pre>
+<p>There is no possible evidence that <code class="highlighter-rouge">⊥</code> holds.</p>
+
+<p>Dual to <code class="highlighter-rouge">⊤</code>, for <code class="highlighter-rouge">⊥</code> there is no introduction rule but an elimination rule.
+Since false never holds, knowing that it holds tells us we are in a
+paradoxical situation.  Given evidence that <code class="highlighter-rouge">⊥</code> holds, we might
+conclude anything!  This is a basic principle of logic, known in
+medieval times by the latin phrase <em>ex falso</em>, and known to children
+through phrases such as “if pigs had wings, then I’d be the Queen of
+Sheba”.  We formalise it as follows.</p>
+<pre class="Agda"><a id="⊥-elim"></a><a id="13893" href="/Connectives/#13893" class="Function">⊥-elim</a> <a id="13900" class="Symbol">:</a> <a id="13902" class="Symbol">∀</a> <a id="13904" class="Symbol">{</a><a id="13905" href="/Connectives/#13905" class="Bound">A</a> <a id="13907" class="Symbol">:</a> <a id="13909" class="PrimitiveType">Set</a><a id="13912" class="Symbol">}</a>
+  <a id="13916" class="Symbol">→</a> <a id="13918" href="/Connectives/#13343" class="Datatype">⊥</a>
+    <a id="13924" class="Comment">--</a>
+  <a id="13929" class="Symbol">→</a> <a id="13931" href="/Connectives/#13905" class="Bound">A</a>
+<a id="13933" href="/Connectives/#13893" class="Function">⊥-elim</a> <a id="13940" class="Symbol">()</a></pre>
+<p>This is our first use of the <em>absurd pattern</em> <code class="highlighter-rouge">()</code>.
+Here since <code class="highlighter-rouge">⊥</code> is a type with no members, we indicate that it is
+<em>never</em> possible to match against a value of this type by using
+the pattern <code class="highlighter-rouge">()</code>.</p>
+
+<p>The nullary case of <code class="highlighter-rouge">case-⊎</code> is <code class="highlighter-rouge">⊥-elim</code>.  By analogy,
+we might have called it <code class="highlighter-rouge">case-⊥</code>, but chose to stick with the name
+in the standard library.</p>
+
+<p>The nullary case of <code class="highlighter-rouge">uniq-⊎</code> is <code class="highlighter-rouge">uniq-⊥</code>, which asserts that <code class="highlighter-rouge">⊥-elim</code>
+is equal to any arbitrary function from <code class="highlighter-rouge">⊥</code>:</p>
+<pre class="Agda"><a id="uniq-⊥"></a><a id="14430" href="/Connectives/#14430" class="Function">uniq-⊥</a> <a id="14437" class="Symbol">:</a> <a id="14439" class="Symbol">∀</a> <a id="14441" class="Symbol">{</a><a id="14442" href="/Connectives/#14442" class="Bound">C</a> <a id="14444" class="Symbol">:</a> <a id="14446" class="PrimitiveType">Set</a><a id="14449" class="Symbol">}</a> <a id="14451" class="Symbol">(</a><a id="14452" href="/Connectives/#14452" class="Bound">h</a> <a id="14454" class="Symbol">:</a> <a id="14456" href="/Connectives/#13343" class="Datatype">⊥</a> <a id="14458" class="Symbol">→</a> <a id="14460" href="/Connectives/#14442" class="Bound">C</a><a id="14461" class="Symbol">)</a> <a id="14463" class="Symbol">(</a><a id="14464" href="/Connectives/#14464" class="Bound">w</a> <a id="14466" class="Symbol">:</a> <a id="14468" href="/Connectives/#13343" class="Datatype">⊥</a><a id="14469" class="Symbol">)</a> <a id="14471" class="Symbol">→</a> <a id="14473" href="/Connectives/#13893" class="Function">⊥-elim</a> <a id="14480" href="/Connectives/#14464" class="Bound">w</a> <a id="14482" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#83" class="Datatype Operator">≡</a> <a id="14484" href="/Connectives/#14452" class="Bound">h</a> <a id="14486" href="/Connectives/#14464" class="Bound">w</a>
+<a id="14488" href="/Connectives/#14430" class="Function">uniq-⊥</a> <a id="14495" href="/Connectives/#14495" class="Bound">h</a> <a id="14497" class="Symbol">()</a></pre>
+<p>Using the absurd pattern asserts there are no possible values for <code class="highlighter-rouge">w</code>,
+so the equation holds trivially.</p>
+
+<p>We refer to <code class="highlighter-rouge">⊥</code> as the <em>empty</em> type. And, indeed,
+type <code class="highlighter-rouge">⊥</code> has no members. For example, the following function
+enumerates all possible arguments of type <code class="highlighter-rouge">⊥</code>:</p>
+<pre class="Agda"><a id="⊥-count"></a><a id="14787" href="/Connectives/#14787" class="Function">⊥-count</a> <a id="14795" class="Symbol">:</a> <a id="14797" href="/Connectives/#13343" class="Datatype">⊥</a> <a id="14799" class="Symbol">→</a> <a id="14801" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a>
+<a id="14803" href="/Connectives/#14787" class="Function">⊥-count</a> <a id="14811" class="Symbol">()</a></pre>
+<p>Here again the absurd pattern <code class="highlighter-rouge">()</code> indicates that no value can match
+type <code class="highlighter-rouge">⊥</code>.</p>
+
+<p>For numbers, zero is the identity of addition. Correspondingly, empty
+is the identity of sums <em>up to isomorphism</em>.</p>
+
+<h4 id="exercise--identityˡ-recommended">Exercise <code class="highlighter-rouge">⊥-identityˡ</code> (recommended)</h4>
+
+<p>Show zero is the left identity of addition.</p>
+
+<h4 id="exercise--identityʳ">Exercise <code class="highlighter-rouge">⊥-identityʳ</code></h4>
+
+<p>Show zero is the right identity of addition.</p>
+
+<h2 id="implication">Implication is function</h2>
+
+<p>Given two propositions <code class="highlighter-rouge">A</code> and <code class="highlighter-rouge">B</code>, the implication <code class="highlighter-rouge">A → B</code> holds if
+whenever <code class="highlighter-rouge">A</code> holds then <code class="highlighter-rouge">B</code> must also hold.  We formalise implication using
+the function type, which has appeared throughout this book.</p>
+
+<p>Evidence that <code class="highlighter-rouge">A → B</code> holds is of the form</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>λ (x : A) → N
+</code></pre></div></div>
+
+<p>where <code class="highlighter-rouge">N</code> is a term of type <code class="highlighter-rouge">B</code> containing as a free variable <code class="highlighter-rouge">x</code> of type <code class="highlighter-rouge">A</code>.
+Given a term <code class="highlighter-rouge">L</code> providing evidence that <code class="highlighter-rouge">A → B</code> holds, and a term <code class="highlighter-rouge">M</code>
+providing evidence that <code class="highlighter-rouge">A</code> holds, the term <code class="highlighter-rouge">L M</code> provides evidence that
+<code class="highlighter-rouge">B</code> holds.  In other words, evidence that <code class="highlighter-rouge">A → B</code> holds is a function that
+converts evidence that <code class="highlighter-rouge">A</code> holds into evidence that <code class="highlighter-rouge">B</code> holds.</p>
+
+<p>Put another way, if we know that <code class="highlighter-rouge">A → B</code> and <code class="highlighter-rouge">A</code> both hold,
+then we may conclude that <code class="highlighter-rouge">B</code> holds:</p>
+<pre class="Agda"><a id="→-elim"></a><a id="15969" href="/Connectives/#15969" class="Function">→-elim</a> <a id="15976" class="Symbol">:</a> <a id="15978" class="Symbol">∀</a> <a id="15980" class="Symbol">{</a><a id="15981" href="/Connectives/#15981" class="Bound">A</a> <a id="15983" href="/Connectives/#15983" class="Bound">B</a> <a id="15985" class="Symbol">:</a> <a id="15987" class="PrimitiveType">Set</a><a id="15990" class="Symbol">}</a>
+  <a id="15994" class="Symbol">→</a> <a id="15996" class="Symbol">(</a><a id="15997" href="/Connectives/#15981" class="Bound">A</a> <a id="15999" class="Symbol">→</a> <a id="16001" href="/Connectives/#15983" class="Bound">B</a><a id="16002" class="Symbol">)</a>
+  <a id="16006" class="Symbol">→</a> <a id="16008" href="/Connectives/#15981" class="Bound">A</a>
+    <a id="16014" class="Comment">-------</a>
+  <a id="16024" class="Symbol">→</a> <a id="16026" href="/Connectives/#15983" class="Bound">B</a>
+<a id="16028" href="/Connectives/#15969" class="Function">→-elim</a> <a id="16035" href="/Connectives/#16035" class="Bound">L</a> <a id="16037" href="/Connectives/#16037" class="Bound">M</a> <a id="16039" class="Symbol">=</a> <a id="16041" href="/Connectives/#16035" class="Bound">L</a> <a id="16043" href="/Connectives/#16037" class="Bound">M</a></pre>
+<p>In medieval times, this rule was known by the name <em>modus ponens</em>.
+It corresponds to function application.</p>
+
+<p>Defining a function, with an named definition or a lambda abstraction,
+is referred to as <em>introducing</em> a function,
+while applying a function is referred to as <em>eliminating</em> the function.</p>
+
+<p>Elimination followed by introduction is the identity:</p>
+<pre class="Agda"><a id="η-→"></a><a id="16419" href="/Connectives/#16419" class="Function">η-→</a> <a id="16423" class="Symbol">:</a> <a id="16425" class="Symbol">∀</a> <a id="16427" class="Symbol">{</a><a id="16428" href="/Connectives/#16428" class="Bound">A</a> <a id="16430" href="/Connectives/#16430" class="Bound">B</a> <a id="16432" class="Symbol">:</a> <a id="16434" class="PrimitiveType">Set</a><a id="16437" class="Symbol">}</a> <a id="16439" class="Symbol">(</a><a id="16440" href="/Connectives/#16440" class="Bound">f</a> <a id="16442" class="Symbol">:</a> <a id="16444" href="/Connectives/#16428" class="Bound">A</a> <a id="16446" class="Symbol">→</a> <a id="16448" href="/Connectives/#16430" class="Bound">B</a><a id="16449" class="Symbol">)</a> <a id="16451" class="Symbol">→</a> <a id="16453" class="Symbol">(λ</a> <a id="16456" class="Symbol">(</a><a id="16457" href="/Connectives/#16457" class="Bound">x</a> <a id="16459" class="Symbol">:</a> <a id="16461" href="/Connectives/#16428" class="Bound">A</a><a id="16462" class="Symbol">)</a> <a id="16464" class="Symbol">→</a> <a id="16466" href="/Connectives/#16440" class="Bound">f</a> <a id="16468" href="/Connectives/#16457" class="Bound">x</a><a id="16469" class="Symbol">)</a> <a id="16471" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#83" class="Datatype Operator">≡</a> <a id="16473" href="/Connectives/#16440" class="Bound">f</a>
+<a id="16475" href="/Connectives/#16419" class="Function">η-→</a> <a id="16479" href="/Connectives/#16479" class="Bound">f</a> <a id="16481" class="Symbol">=</a> <a id="16483" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a></pre>
+
+<p>Implication binds less tightly than any other operator. Thus, <code class="highlighter-rouge">A ⊎ B →
+B ⊎ A</code> parses as <code class="highlighter-rouge">(A ⊎ B) → (B ⊎ A)</code>.</p>
+
+<p>Given two types <code class="highlighter-rouge">A</code> and <code class="highlighter-rouge">B</code>, we refer to <code class="highlighter-rouge">A → B</code> as the <em>function</em>
+space from <code class="highlighter-rouge">A</code> to <code class="highlighter-rouge">B</code>.  It is also sometimes called the <em>exponential</em>,
+with <code class="highlighter-rouge">B</code> raised to the <code class="highlighter-rouge">A</code> power.  Among other reasons for calling
+it the exponential, note that if type <code class="highlighter-rouge">A</code> has <code class="highlighter-rouge">m</code> distinct
+members, and type <code class="highlighter-rouge">B</code> has <code class="highlighter-rouge">n</code> distinct members, then the type
+<code class="highlighter-rouge">A → B</code> has <code class="highlighter-rouge">nᵐ</code> distinct members.  For instance, consider a
+type <code class="highlighter-rouge">Bool</code> with two members and a type <code class="highlighter-rouge">Tri</code> with three members,
+as defined earlier. The the type <code class="highlighter-rouge">Bool → Tri</code> has nine (that is,
+three squared) members:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>λ{true → aa; false → aa}  λ{true → aa; false → bb}  λ{true → aa; false → cc}
+λ{true → bb; false → aa}  λ{true → bb; false → bb}  λ{true → bb; false → cc}
+λ{true → cc; false → aa}  λ{true → cc; false → bb}  λ{true → cc; false → cc}
+</code></pre></div></div>
+
+<p>For example, the following function enumerates all possible
+arguments of the type <code class="highlighter-rouge">Bool → Tri</code>:</p>
+<pre class="Agda"><a id="→-count"></a><a id="17506" href="/Connectives/#17506" class="Function">→-count</a> <a id="17514" class="Symbol">:</a> <a id="17516" class="Symbol">(</a><a id="17517" href="/Connectives/#4427" class="Datatype">Bool</a> <a id="17522" class="Symbol">→</a> <a id="17524" href="/Connectives/#4480" class="Datatype">Tri</a><a id="17527" class="Symbol">)</a> <a id="17529" class="Symbol">→</a> <a id="17531" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Nat.html#97" class="Datatype">ℕ</a>
+<a id="17533" href="/Connectives/#17506" class="Function">→-count</a> <a id="17541" href="/Connectives/#17541" class="Bound">f</a> <a id="17543" class="Keyword">with</a> <a id="17548" href="/Connectives/#17541" class="Bound">f</a> <a id="17550" href="/Connectives/#4446" class="InductiveConstructor">true</a> <a id="17555" class="Symbol">|</a> <a id="17557" href="/Connectives/#17541" class="Bound">f</a> <a id="17559" href="/Connectives/#4461" class="InductiveConstructor">false</a>
+<a id="17565" class="Symbol">...</a>          <a id="17578" class="Symbol">|</a> <a id="17580" href="/Connectives/#4498" class="InductiveConstructor">aa</a>     <a id="17587" class="Symbol">|</a> <a id="17589" href="/Connectives/#4498" class="InductiveConstructor">aa</a>      <a id="17597" class="Symbol">=</a>   <a id="17601" class="Number">1</a>
+<a id="17603" class="Symbol">...</a>          <a id="17616" class="Symbol">|</a> <a id="17618" href="/Connectives/#4498" class="InductiveConstructor">aa</a>     <a id="17625" class="Symbol">|</a> <a id="17627" href="/Connectives/#4509" class="InductiveConstructor">bb</a>      <a id="17635" class="Symbol">=</a>   <a id="17639" class="Number">2</a>
+<a id="17641" class="Symbol">...</a>          <a id="17654" class="Symbol">|</a> <a id="17656" href="/Connectives/#4498" class="InductiveConstructor">aa</a>     <a id="17663" class="Symbol">|</a> <a id="17665" href="/Connectives/#4520" class="InductiveConstructor">cc</a>      <a id="17673" class="Symbol">=</a>   <a id="17677" class="Number">3</a>
+<a id="17679" class="Symbol">...</a>          <a id="17692" class="Symbol">|</a> <a id="17694" href="/Connectives/#4509" class="InductiveConstructor">bb</a>     <a id="17701" class="Symbol">|</a> <a id="17703" href="/Connectives/#4498" class="InductiveConstructor">aa</a>      <a id="17711" class="Symbol">=</a>   <a id="17715" class="Number">4</a>
+<a id="17717" class="Symbol">...</a>          <a id="17730" class="Symbol">|</a> <a id="17732" href="/Connectives/#4509" class="InductiveConstructor">bb</a>     <a id="17739" class="Symbol">|</a> <a id="17741" href="/Connectives/#4509" class="InductiveConstructor">bb</a>      <a id="17749" class="Symbol">=</a>   <a id="17753" class="Number">5</a>
+<a id="17755" class="Symbol">...</a>          <a id="17768" class="Symbol">|</a> <a id="17770" href="/Connectives/#4509" class="InductiveConstructor">bb</a>     <a id="17777" class="Symbol">|</a> <a id="17779" href="/Connectives/#4520" class="InductiveConstructor">cc</a>      <a id="17787" class="Symbol">=</a>   <a id="17791" class="Number">6</a>
+<a id="17793" class="Symbol">...</a>          <a id="17806" class="Symbol">|</a> <a id="17808" href="/Connectives/#4520" class="InductiveConstructor">cc</a>     <a id="17815" class="Symbol">|</a> <a id="17817" href="/Connectives/#4498" class="InductiveConstructor">aa</a>      <a id="17825" class="Symbol">=</a>   <a id="17829" class="Number">7</a>
+<a id="17831" class="Symbol">...</a>          <a id="17844" class="Symbol">|</a> <a id="17846" href="/Connectives/#4520" class="InductiveConstructor">cc</a>     <a id="17853" class="Symbol">|</a> <a id="17855" href="/Connectives/#4509" class="InductiveConstructor">bb</a>      <a id="17863" class="Symbol">=</a>   <a id="17867" class="Number">8</a>
+<a id="17869" class="Symbol">...</a>          <a id="17882" class="Symbol">|</a> <a id="17884" href="/Connectives/#4520" class="InductiveConstructor">cc</a>     <a id="17891" class="Symbol">|</a> <a id="17893" href="/Connectives/#4520" class="InductiveConstructor">cc</a>      <a id="17901" class="Symbol">=</a>   <a id="17905" class="Number">9</a></pre>
+
+<p>Exponential on types also share a property with exponential on
+numbers in that many of the standard identities for numbers carry
+over to the types.</p>
+
+<p>Corresponding to the law</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(p ^ n) ^ m  ≡  p ^ (n * m)
+</code></pre></div></div>
+
+<p>we have the isomorphism</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>A → (B → C)  ≃  (A × B) → C
+</code></pre></div></div>
+
+<p>Both types can be viewed as functions that given evidence that <code class="highlighter-rouge">A</code> holds
+and evidence that <code class="highlighter-rouge">B</code> holds can return evidence that <code class="highlighter-rouge">C</code> holds.
+This isomorphism sometimes goes by the name <em>currying</em>.
+The proof of the right inverse requires extensionality:</p>
+<pre class="Agda"><a id="currying"></a><a id="18447" href="/Connectives/#18447" class="Function">currying</a> <a id="18456" class="Symbol">:</a> <a id="18458" class="Symbol">∀</a> <a id="18460" class="Symbol">{</a><a id="18461" href="/Connectives/#18461" class="Bound">A</a> <a id="18463" href="/Connectives/#18463" class="Bound">B</a> <a id="18465" href="/Connectives/#18465" class="Bound">C</a> <a id="18467" class="Symbol">:</a> <a id="18469" class="PrimitiveType">Set</a><a id="18472" class="Symbol">}</a> <a id="18474" class="Symbol">→</a> <a id="18476" class="Symbol">(</a><a id="18477" href="/Connectives/#18461" class="Bound">A</a> <a id="18479" class="Symbol">→</a> <a id="18481" href="/Connectives/#18463" class="Bound">B</a> <a id="18483" class="Symbol">→</a> <a id="18485" href="/Connectives/#18465" class="Bound">C</a><a id="18486" class="Symbol">)</a> <a id="18488" href="/Isomorphism/#4104" class="Record Operator">≃</a> <a id="18490" class="Symbol">(</a><a id="18491" href="/Connectives/#18461" class="Bound">A</a> <a id="18493" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="18495" href="/Connectives/#18463" class="Bound">B</a> <a id="18497" class="Symbol">→</a> <a id="18499" href="/Connectives/#18465" class="Bound">C</a><a id="18500" class="Symbol">)</a>
+<a id="18502" href="/Connectives/#18447" class="Function">currying</a> <a id="18511" class="Symbol">=</a>
+  <a id="18515" class="Keyword">record</a>
+    <a id="18526" class="Symbol">{</a> <a id="18528" class="Field">to</a>      <a id="18536" class="Symbol">=</a>  <a id="18539" class="Symbol">λ{</a> <a id="18542" href="/Connectives/#18542" class="Bound">f</a> <a id="18544" class="Symbol">→</a> <a id="18546" class="Symbol">λ{</a> <a id="18549" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="18551" href="/Connectives/#18551" class="Bound">x</a> <a id="18553" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="18555" href="/Connectives/#18555" class="Bound">y</a> <a id="18557" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="18559" class="Symbol">→</a> <a id="18561" href="/Connectives/#18542" class="Bound">f</a> <a id="18563" href="/Connectives/#18551" class="Bound">x</a> <a id="18565" href="/Connectives/#18555" class="Bound">y</a> <a id="18567" class="Symbol">}}</a>
+    <a id="18574" class="Symbol">;</a> <a id="18576" class="Field">from</a>    <a id="18584" class="Symbol">=</a>  <a id="18587" class="Symbol">λ{</a> <a id="18590" href="/Connectives/#18590" class="Bound">g</a> <a id="18592" class="Symbol">→</a> <a id="18594" class="Symbol">λ{</a> <a id="18597" href="/Connectives/#18597" class="Bound">x</a> <a id="18599" class="Symbol">→</a> <a id="18601" class="Symbol">λ{</a> <a id="18604" href="/Connectives/#18604" class="Bound">y</a> <a id="18606" class="Symbol">→</a> <a id="18608" href="/Connectives/#18590" class="Bound">g</a> <a id="18610" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="18612" href="/Connectives/#18597" class="Bound">x</a> <a id="18614" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="18616" href="/Connectives/#18604" class="Bound">y</a> <a id="18618" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="18620" class="Symbol">}}}</a>
+    <a id="18628" class="Symbol">;</a> <a id="18630" class="Field">from∘to</a> <a id="18638" class="Symbol">=</a>  <a id="18641" class="Symbol">λ{</a> <a id="18644" href="/Connectives/#18644" class="Bound">f</a> <a id="18646" class="Symbol">→</a> <a id="18648" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a> <a id="18653" class="Symbol">}</a>
+    <a id="18659" class="Symbol">;</a> <a id="18661" class="Field">to∘from</a> <a id="18669" class="Symbol">=</a>  <a id="18672" class="Symbol">λ{</a> <a id="18675" href="/Connectives/#18675" class="Bound">g</a> <a id="18677" class="Symbol">→</a> <a id="18679" href="/Isomorphism/#2748" class="Postulate">extensionality</a> <a id="18694" class="Symbol">λ{</a> <a id="18697" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="18699" href="/Connectives/#18699" class="Bound">x</a> <a id="18701" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="18703" href="/Connectives/#18703" class="Bound">y</a> <a id="18705" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="18707" class="Symbol">→</a> <a id="18709" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a> <a id="18714" class="Symbol">}}</a>
+    <a id="18721" class="Symbol">}</a></pre>
+
+<p>Currying tells us that instead of a function that takes a pair of arguments,
+we can have a function that takes the first argument and returns a function that
+expects the second argument.  Thus, for instance, our way of writing addition</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>_+_ : ℕ → ℕ → ℕ
+</code></pre></div></div>
+
+<p>is isomorphic to a function that accepts a pair of arguments:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>_+′_ : (ℕ × ℕ) → ℕ
+</code></pre></div></div>
+
+<p>Agda is optimised for currying, so <code class="highlighter-rouge">2 + 3</code> abbreviates <code class="highlighter-rouge">_+_ 2 3</code>.
+In a language optimised for pairing, we would instead take <code class="highlighter-rouge">2 +′ 3</code> as
+an abbreviation for <code class="highlighter-rouge">_+′_ ⟨ 2 , 3 ⟩</code>.</p>
+
+<p>Corresponding to the law</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>p ^ (n + m) = (p ^ n) * (p ^ m)
+</code></pre></div></div>
+
+<p>we have the isomorphism:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(A ⊎ B) → C  ≃  (A → C) × (B → C)
+</code></pre></div></div>
+
+<p>That is, the assertion that if either <code class="highlighter-rouge">A</code> holds or <code class="highlighter-rouge">B</code> holds then <code class="highlighter-rouge">C</code> holds
+is the same as the assertion that if <code class="highlighter-rouge">A</code> holds then <code class="highlighter-rouge">C</code> holds and if
+<code class="highlighter-rouge">B</code> holds then <code class="highlighter-rouge">C</code> holds.  The proof of the left inverse requires extensionality:</p>
+<pre class="Agda"><a id="→-distrib-⊎"></a><a id="19624" href="/Connectives/#19624" class="Function">→-distrib-⊎</a> <a id="19636" class="Symbol">:</a> <a id="19638" class="Symbol">∀</a> <a id="19640" class="Symbol">{</a><a id="19641" href="/Connectives/#19641" class="Bound">A</a> <a id="19643" href="/Connectives/#19643" class="Bound">B</a> <a id="19645" href="/Connectives/#19645" class="Bound">C</a> <a id="19647" class="Symbol">:</a> <a id="19649" class="PrimitiveType">Set</a><a id="19652" class="Symbol">}</a> <a id="19654" class="Symbol">→</a> <a id="19656" class="Symbol">(</a><a id="19657" href="/Connectives/#19641" class="Bound">A</a> <a id="19659" href="/Connectives/#10059" class="Datatype Operator">⊎</a> <a id="19661" href="/Connectives/#19643" class="Bound">B</a> <a id="19663" class="Symbol">→</a> <a id="19665" href="/Connectives/#19645" class="Bound">C</a><a id="19666" class="Symbol">)</a> <a id="19668" href="/Isomorphism/#4104" class="Record Operator">≃</a> <a id="19670" class="Symbol">((</a><a id="19672" href="/Connectives/#19641" class="Bound">A</a> <a id="19674" class="Symbol">→</a> <a id="19676" href="/Connectives/#19645" class="Bound">C</a><a id="19677" class="Symbol">)</a> <a id="19679" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="19681" class="Symbol">(</a><a id="19682" href="/Connectives/#19643" class="Bound">B</a> <a id="19684" class="Symbol">→</a> <a id="19686" href="/Connectives/#19645" class="Bound">C</a><a id="19687" class="Symbol">))</a>
+<a id="19690" href="/Connectives/#19624" class="Function">→-distrib-⊎</a> <a id="19702" class="Symbol">=</a>
+  <a id="19706" class="Keyword">record</a>
+    <a id="19717" class="Symbol">{</a> <a id="19719" class="Field">to</a>      <a id="19727" class="Symbol">=</a> <a id="19729" class="Symbol">λ{</a> <a id="19732" href="/Connectives/#19732" class="Bound">f</a> <a id="19734" class="Symbol">→</a> <a id="19736" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="19738" href="/Connectives/#19732" class="Bound">f</a> <a id="19740" href="https://agda.github.io/agda-stdlib/Function.html#769" class="Function Operator">∘</a> <a id="19742" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="19747" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="19749" href="/Connectives/#19732" class="Bound">f</a> <a id="19751" href="https://agda.github.io/agda-stdlib/Function.html#769" class="Function Operator">∘</a> <a id="19753" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="19758" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="19760" class="Symbol">}</a>
+    <a id="19766" class="Symbol">;</a> <a id="19768" class="Field">from</a>    <a id="19776" class="Symbol">=</a> <a id="19778" class="Symbol">λ{</a> <a id="19781" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="19783" href="/Connectives/#19783" class="Bound">g</a> <a id="19785" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="19787" href="/Connectives/#19787" class="Bound">h</a> <a id="19789" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="19791" class="Symbol">→</a> <a id="19793" class="Symbol">λ{</a> <a id="19796" class="Symbol">(</a><a id="19797" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="19802" href="/Connectives/#19802" class="Bound">x</a><a id="19803" class="Symbol">)</a> <a id="19805" class="Symbol">→</a> <a id="19807" href="/Connectives/#19783" class="Bound">g</a> <a id="19809" href="/Connectives/#19802" class="Bound">x</a> <a id="19811" class="Symbol">;</a> <a id="19813" class="Symbol">(</a><a id="19814" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="19819" href="/Connectives/#19819" class="Bound">y</a><a id="19820" class="Symbol">)</a> <a id="19822" class="Symbol">→</a> <a id="19824" href="/Connectives/#19787" class="Bound">h</a> <a id="19826" href="/Connectives/#19819" class="Bound">y</a> <a id="19828" class="Symbol">}</a> <a id="19830" class="Symbol">}</a>
+    <a id="19836" class="Symbol">;</a> <a id="19838" class="Field">from∘to</a> <a id="19846" class="Symbol">=</a> <a id="19848" class="Symbol">λ{</a> <a id="19851" href="/Connectives/#19851" class="Bound">f</a> <a id="19853" class="Symbol">→</a> <a id="19855" href="/Isomorphism/#2748" class="Postulate">extensionality</a> <a id="19870" class="Symbol">λ{</a> <a id="19873" class="Symbol">(</a><a id="19874" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="19879" href="/Connectives/#19879" class="Bound">x</a><a id="19880" class="Symbol">)</a> <a id="19882" class="Symbol">→</a> <a id="19884" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a> <a id="19889" class="Symbol">;</a> <a id="19891" class="Symbol">(</a><a id="19892" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="19897" href="/Connectives/#19897" class="Bound">y</a><a id="19898" class="Symbol">)</a> <a id="19900" class="Symbol">→</a> <a id="19902" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a> <a id="19907" class="Symbol">}</a> <a id="19909" class="Symbol">}</a>
+    <a id="19915" class="Symbol">;</a> <a id="19917" class="Field">to∘from</a> <a id="19925" class="Symbol">=</a> <a id="19927" class="Symbol">λ{</a> <a id="19930" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="19932" href="/Connectives/#19932" class="Bound">g</a> <a id="19934" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="19936" href="/Connectives/#19936" class="Bound">h</a> <a id="19938" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="19940" class="Symbol">→</a> <a id="19942" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a> <a id="19947" class="Symbol">}</a>
+    <a id="19953" class="Symbol">}</a></pre>
+
+<p>Corresponding to the law</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(p * n) ^ m = (p ^ m) * (n ^ m)
+</code></pre></div></div>
+
+<p>we have the isomorphism:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>A → B × C  ≃  (A → B) × (A → C)
+</code></pre></div></div>
+
+<p>That is, the assertion that if <code class="highlighter-rouge">A</code> holds then <code class="highlighter-rouge">B</code> holds and <code class="highlighter-rouge">C</code> holds
+is the same as the assertion that if <code class="highlighter-rouge">A</code> holds then <code class="highlighter-rouge">B</code> holds and if
+<code class="highlighter-rouge">A</code> holds then <code class="highlighter-rouge">C</code> holds.  The proof of left inverse requires both extensionality
+and the rule <code class="highlighter-rouge">η-×</code> for products:</p>
+<pre class="Agda"><a id="→-distrib-×"></a><a id="20360" href="/Connectives/#20360" class="Function">→-distrib-×</a> <a id="20372" class="Symbol">:</a> <a id="20374" class="Symbol">∀</a> <a id="20376" class="Symbol">{</a><a id="20377" href="/Connectives/#20377" class="Bound">A</a> <a id="20379" href="/Connectives/#20379" class="Bound">B</a> <a id="20381" href="/Connectives/#20381" class="Bound">C</a> <a id="20383" class="Symbol">:</a> <a id="20385" class="PrimitiveType">Set</a><a id="20388" class="Symbol">}</a> <a id="20390" class="Symbol">→</a> <a id="20392" class="Symbol">(</a><a id="20393" href="/Connectives/#20377" class="Bound">A</a> <a id="20395" class="Symbol">→</a> <a id="20397" href="/Connectives/#20379" class="Bound">B</a> <a id="20399" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="20401" href="/Connectives/#20381" class="Bound">C</a><a id="20402" class="Symbol">)</a> <a id="20404" href="/Isomorphism/#4104" class="Record Operator">≃</a> <a id="20406" class="Symbol">(</a><a id="20407" href="/Connectives/#20377" class="Bound">A</a> <a id="20409" class="Symbol">→</a> <a id="20411" href="/Connectives/#20379" class="Bound">B</a><a id="20412" class="Symbol">)</a> <a id="20414" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="20416" class="Symbol">(</a><a id="20417" href="/Connectives/#20377" class="Bound">A</a> <a id="20419" class="Symbol">→</a> <a id="20421" href="/Connectives/#20381" class="Bound">C</a><a id="20422" class="Symbol">)</a>
+<a id="20424" href="/Connectives/#20360" class="Function">→-distrib-×</a> <a id="20436" class="Symbol">=</a>
+  <a id="20440" class="Keyword">record</a>
+    <a id="20451" class="Symbol">{</a> <a id="20453" class="Field">to</a>      <a id="20461" class="Symbol">=</a> <a id="20463" class="Symbol">λ{</a> <a id="20466" href="/Connectives/#20466" class="Bound">f</a> <a id="20468" class="Symbol">→</a> <a id="20470" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="20472" href="/Connectives/#1505" class="Function">proj₁</a> <a id="20478" href="https://agda.github.io/agda-stdlib/Function.html#769" class="Function Operator">∘</a> <a id="20480" href="/Connectives/#20466" class="Bound">f</a> <a id="20482" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="20484" href="/Connectives/#1574" class="Function">proj₂</a> <a id="20490" href="https://agda.github.io/agda-stdlib/Function.html#769" class="Function Operator">∘</a> <a id="20492" href="/Connectives/#20466" class="Bound">f</a> <a id="20494" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="20496" class="Symbol">}</a>
+    <a id="20502" class="Symbol">;</a> <a id="20504" class="Field">from</a>    <a id="20512" class="Symbol">=</a> <a id="20514" class="Symbol">λ{</a> <a id="20517" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="20519" href="/Connectives/#20519" class="Bound">g</a> <a id="20521" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="20523" href="/Connectives/#20523" class="Bound">h</a> <a id="20525" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="20527" class="Symbol">→</a> <a id="20529" class="Symbol">λ{</a> <a id="20532" href="/Connectives/#20532" class="Bound">x</a> <a id="20534" class="Symbol">→</a> <a id="20536" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="20538" href="/Connectives/#20519" class="Bound">g</a> <a id="20540" href="/Connectives/#20532" class="Bound">x</a> <a id="20542" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="20544" href="/Connectives/#20523" class="Bound">h</a> <a id="20546" href="/Connectives/#20532" class="Bound">x</a> <a id="20548" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="20550" class="Symbol">}</a> <a id="20552" class="Symbol">}</a>
+    <a id="20558" class="Symbol">;</a> <a id="20560" class="Field">from∘to</a> <a id="20568" class="Symbol">=</a> <a id="20570" class="Symbol">λ{</a> <a id="20573" href="/Connectives/#20573" class="Bound">f</a> <a id="20575" class="Symbol">→</a> <a id="20577" href="/Isomorphism/#2748" class="Postulate">extensionality</a> <a id="20592" class="Symbol">λ{</a> <a id="20595" href="/Connectives/#20595" class="Bound">x</a> <a id="20597" class="Symbol">→</a> <a id="20599" href="/Connectives/#3488" class="Function">η-×</a> <a id="20603" class="Symbol">(</a><a id="20604" href="/Connectives/#20573" class="Bound">f</a> <a id="20606" href="/Connectives/#20595" class="Bound">x</a><a id="20607" class="Symbol">)</a> <a id="20609" class="Symbol">}</a> <a id="20611" class="Symbol">}</a>
+    <a id="20617" class="Symbol">;</a> <a id="20619" class="Field">to∘from</a> <a id="20627" class="Symbol">=</a> <a id="20629" class="Symbol">λ{</a> <a id="20632" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="20634" href="/Connectives/#20634" class="Bound">g</a> <a id="20636" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="20638" href="/Connectives/#20638" class="Bound">h</a> <a id="20640" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="20642" class="Symbol">→</a> <a id="20644" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a> <a id="20649" class="Symbol">}</a>
+    <a id="20655" class="Symbol">}</a></pre>
+
+<h2 id="distribution">Distribution</h2>
+
+<p>Products distribute over sum, up to isomorphism.  The code to validate
+this fact is similar in structure to our previous results:</p>
+<pre class="Agda"><a id="×-distrib-⊎"></a><a id="20830" href="/Connectives/#20830" class="Function">×-distrib-⊎</a> <a id="20842" class="Symbol">:</a> <a id="20844" class="Symbol">∀</a> <a id="20846" class="Symbol">{</a><a id="20847" href="/Connectives/#20847" class="Bound">A</a> <a id="20849" href="/Connectives/#20849" class="Bound">B</a> <a id="20851" href="/Connectives/#20851" class="Bound">C</a> <a id="20853" class="Symbol">:</a> <a id="20855" class="PrimitiveType">Set</a><a id="20858" class="Symbol">}</a> <a id="20860" class="Symbol">→</a> <a id="20862" class="Symbol">(</a><a id="20863" href="/Connectives/#20847" class="Bound">A</a> <a id="20865" href="/Connectives/#10059" class="Datatype Operator">⊎</a> <a id="20867" href="/Connectives/#20849" class="Bound">B</a><a id="20868" class="Symbol">)</a> <a id="20870" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="20872" href="/Connectives/#20851" class="Bound">C</a> <a id="20874" href="/Isomorphism/#4104" class="Record Operator">≃</a> <a id="20876" class="Symbol">(</a><a id="20877" href="/Connectives/#20847" class="Bound">A</a> <a id="20879" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="20881" href="/Connectives/#20851" class="Bound">C</a><a id="20882" class="Symbol">)</a> <a id="20884" href="/Connectives/#10059" class="Datatype Operator">⊎</a> <a id="20886" class="Symbol">(</a><a id="20887" href="/Connectives/#20849" class="Bound">B</a> <a id="20889" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="20891" href="/Connectives/#20851" class="Bound">C</a><a id="20892" class="Symbol">)</a>
+<a id="20894" href="/Connectives/#20830" class="Function">×-distrib-⊎</a> <a id="20906" class="Symbol">=</a>
+  <a id="20910" class="Keyword">record</a>
+    <a id="20921" class="Symbol">{</a> <a id="20923" class="Field">to</a>      <a id="20931" class="Symbol">=</a> <a id="20933" class="Symbol">λ{</a> <a id="20936" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="20938" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="20943" href="/Connectives/#20943" class="Bound">x</a> <a id="20945" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="20947" href="/Connectives/#20947" class="Bound">z</a> <a id="20949" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="20951" class="Symbol">→</a> <a id="20953" class="Symbol">(</a><a id="20954" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="20959" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="20961" href="/Connectives/#20943" class="Bound">x</a> <a id="20963" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="20965" href="/Connectives/#20947" class="Bound">z</a> <a id="20967" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a><a id="20968" class="Symbol">)</a>
+                 <a id="20987" class="Symbol">;</a> <a id="20989" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="20991" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="20996" href="/Connectives/#20996" class="Bound">y</a> <a id="20998" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="21000" href="/Connectives/#21000" class="Bound">z</a> <a id="21002" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="21004" class="Symbol">→</a> <a id="21006" class="Symbol">(</a><a id="21007" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="21012" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="21014" href="/Connectives/#20996" class="Bound">y</a> <a id="21016" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="21018" href="/Connectives/#21000" class="Bound">z</a> <a id="21020" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a><a id="21021" class="Symbol">)</a>
+                 <a id="21040" class="Symbol">}</a>
+    <a id="21046" class="Symbol">;</a> <a id="21048" class="Field">from</a>    <a id="21056" class="Symbol">=</a> <a id="21058" class="Symbol">λ{</a> <a id="21061" class="Symbol">(</a><a id="21062" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="21067" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="21069" href="/Connectives/#21069" class="Bound">x</a> <a id="21071" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="21073" href="/Connectives/#21073" class="Bound">z</a> <a id="21075" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a><a id="21076" class="Symbol">)</a> <a id="21078" class="Symbol">→</a> <a id="21080" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="21082" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="21087" href="/Connectives/#21069" class="Bound">x</a> <a id="21089" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="21091" href="/Connectives/#21073" class="Bound">z</a> <a id="21093" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a>
+                 <a id="21112" class="Symbol">;</a> <a id="21114" class="Symbol">(</a><a id="21115" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="21120" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="21122" href="/Connectives/#21122" class="Bound">y</a> <a id="21124" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="21126" href="/Connectives/#21126" class="Bound">z</a> <a id="21128" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a><a id="21129" class="Symbol">)</a> <a id="21131" class="Symbol">→</a> <a id="21133" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="21135" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="21140" href="/Connectives/#21122" class="Bound">y</a> <a id="21142" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="21144" href="/Connectives/#21126" class="Bound">z</a> <a id="21146" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a>
+                 <a id="21165" class="Symbol">}</a>
+    <a id="21171" class="Symbol">;</a> <a id="21173" class="Field">from∘to</a> <a id="21181" class="Symbol">=</a> <a id="21183" class="Symbol">λ{</a> <a id="21186" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="21188" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="21193" href="/Connectives/#21193" class="Bound">x</a> <a id="21195" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="21197" href="/Connectives/#21197" class="Bound">z</a> <a id="21199" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="21201" class="Symbol">→</a> <a id="21203" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a>
+                 <a id="21225" class="Symbol">;</a> <a id="21227" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="21229" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="21234" href="/Connectives/#21234" class="Bound">y</a> <a id="21236" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="21238" href="/Connectives/#21238" class="Bound">z</a> <a id="21240" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="21242" class="Symbol">→</a> <a id="21244" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a>
+                 <a id="21266" class="Symbol">}</a>
+    <a id="21272" class="Symbol">;</a> <a id="21274" class="Field">to∘from</a> <a id="21282" class="Symbol">=</a> <a id="21284" class="Symbol">λ{</a> <a id="21287" class="Symbol">(</a><a id="21288" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="21293" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="21295" href="/Connectives/#21295" class="Bound">x</a> <a id="21297" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="21299" href="/Connectives/#21299" class="Bound">z</a> <a id="21301" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a><a id="21302" class="Symbol">)</a> <a id="21304" class="Symbol">→</a> <a id="21306" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a>
+                 <a id="21328" class="Symbol">;</a> <a id="21330" class="Symbol">(</a><a id="21331" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="21336" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="21338" href="/Connectives/#21338" class="Bound">y</a> <a id="21340" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="21342" href="/Connectives/#21342" class="Bound">z</a> <a id="21344" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a><a id="21345" class="Symbol">)</a> <a id="21347" class="Symbol">→</a> <a id="21349" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a>
+                 <a id="21371" class="Symbol">}</a>
+    <a id="21377" class="Symbol">}</a></pre>
+
+<p>Sums do not distribute over products up to isomorphism, but it is an embedding:</p>
+<pre class="Agda"><a id="⊎-distrib-×"></a><a id="21484" href="/Connectives/#21484" class="Function">⊎-distrib-×</a> <a id="21496" class="Symbol">:</a> <a id="21498" class="Symbol">∀</a> <a id="21500" class="Symbol">{</a><a id="21501" href="/Connectives/#21501" class="Bound">A</a> <a id="21503" href="/Connectives/#21503" class="Bound">B</a> <a id="21505" href="/Connectives/#21505" class="Bound">C</a> <a id="21507" class="Symbol">:</a> <a id="21509" class="PrimitiveType">Set</a><a id="21512" class="Symbol">}</a> <a id="21514" class="Symbol">→</a> <a id="21516" class="Symbol">(</a><a id="21517" href="/Connectives/#21501" class="Bound">A</a> <a id="21519" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="21521" href="/Connectives/#21503" class="Bound">B</a><a id="21522" class="Symbol">)</a> <a id="21524" href="/Connectives/#10059" class="Datatype Operator">⊎</a> <a id="21526" href="/Connectives/#21505" class="Bound">C</a> <a id="21528" href="/Isomorphism/#9022" class="Record Operator">≲</a> <a id="21530" class="Symbol">(</a><a id="21531" href="/Connectives/#21501" class="Bound">A</a> <a id="21533" href="/Connectives/#10059" class="Datatype Operator">⊎</a> <a id="21535" href="/Connectives/#21505" class="Bound">C</a><a id="21536" class="Symbol">)</a> <a id="21538" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="21540" class="Symbol">(</a><a id="21541" href="/Connectives/#21503" class="Bound">B</a> <a id="21543" href="/Connectives/#10059" class="Datatype Operator">⊎</a> <a id="21545" href="/Connectives/#21505" class="Bound">C</a><a id="21546" class="Symbol">)</a>
+<a id="21548" href="/Connectives/#21484" class="Function">⊎-distrib-×</a> <a id="21560" class="Symbol">=</a>
+  <a id="21564" class="Keyword">record</a>
+    <a id="21575" class="Symbol">{</a> <a id="21577" class="Field">to</a>      <a id="21585" class="Symbol">=</a> <a id="21587" class="Symbol">λ{</a> <a id="21590" class="Symbol">(</a><a id="21591" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="21596" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="21598" href="/Connectives/#21598" class="Bound">x</a> <a id="21600" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="21602" href="/Connectives/#21602" class="Bound">y</a> <a id="21604" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a><a id="21605" class="Symbol">)</a> <a id="21607" class="Symbol">→</a> <a id="21609" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="21611" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="21616" href="/Connectives/#21598" class="Bound">x</a> <a id="21618" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="21620" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="21625" href="/Connectives/#21602" class="Bound">y</a> <a id="21627" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a>
+                 <a id="21646" class="Symbol">;</a> <a id="21648" class="Symbol">(</a><a id="21649" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="21654" href="/Connectives/#21654" class="Bound">z</a><a id="21655" class="Symbol">)</a>         <a id="21665" class="Symbol">→</a> <a id="21667" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="21669" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="21674" href="/Connectives/#21654" class="Bound">z</a> <a id="21676" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="21678" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="21683" href="/Connectives/#21654" class="Bound">z</a> <a id="21685" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a>
+                 <a id="21704" class="Symbol">}</a>
+    <a id="21710" class="Symbol">;</a> <a id="21712" class="Field">from</a>    <a id="21720" class="Symbol">=</a> <a id="21722" class="Symbol">λ{</a> <a id="21725" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="21727" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="21732" href="/Connectives/#21732" class="Bound">x</a> <a id="21734" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="21736" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="21741" href="/Connectives/#21741" class="Bound">y</a> <a id="21743" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="21745" class="Symbol">→</a> <a id="21747" class="Symbol">(</a><a id="21748" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="21753" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="21755" href="/Connectives/#21732" class="Bound">x</a> <a id="21757" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="21759" href="/Connectives/#21741" class="Bound">y</a> <a id="21761" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a><a id="21762" class="Symbol">)</a>
+                 <a id="21781" class="Symbol">;</a> <a id="21783" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="21785" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="21790" href="/Connectives/#21790" class="Bound">x</a> <a id="21792" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="21794" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="21799" href="/Connectives/#21799" class="Bound">z</a> <a id="21801" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="21803" class="Symbol">→</a> <a id="21805" class="Symbol">(</a><a id="21806" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="21811" href="/Connectives/#21799" class="Bound">z</a><a id="21812" class="Symbol">)</a>
+                 <a id="21831" class="Symbol">;</a> <a id="21833" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="21835" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="21840" href="/Connectives/#21840" class="Bound">z</a> <a id="21842" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="21844" class="Symbol">_</a>      <a id="21851" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a> <a id="21853" class="Symbol">→</a> <a id="21855" class="Symbol">(</a><a id="21856" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="21861" href="/Connectives/#21840" class="Bound">z</a><a id="21862" class="Symbol">)</a>
+                 <a id="21881" class="Symbol">}</a>
+    <a id="21887" class="Symbol">;</a> <a id="21889" class="Field">from∘to</a> <a id="21897" class="Symbol">=</a> <a id="21899" class="Symbol">λ{</a> <a id="21902" class="Symbol">(</a><a id="21903" href="/Connectives/#10090" class="InductiveConstructor">inj₁</a> <a id="21908" href="/Connectives/#1203" class="InductiveConstructor Operator">⟨</a> <a id="21910" href="/Connectives/#21910" class="Bound">x</a> <a id="21912" href="/Connectives/#1203" class="InductiveConstructor Operator">,</a> <a id="21914" href="/Connectives/#21914" class="Bound">y</a> <a id="21916" href="/Connectives/#1203" class="InductiveConstructor Operator">⟩</a><a id="21917" class="Symbol">)</a> <a id="21919" class="Symbol">→</a> <a id="21921" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a>
+                 <a id="21943" class="Symbol">;</a> <a id="21945" class="Symbol">(</a><a id="21946" href="/Connectives/#10146" class="InductiveConstructor">inj₂</a> <a id="21951" href="/Connectives/#21951" class="Bound">z</a><a id="21952" class="Symbol">)</a>         <a id="21962" class="Symbol">→</a> <a id="21964" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Equality.html#140" class="InductiveConstructor">refl</a>
+                 <a id="21986" class="Symbol">}</a>
+    <a id="21992" class="Symbol">}</a></pre>
+<p>Note that there is a choice in how we write the <code class="highlighter-rouge">from</code> function.
+As given, it takes <code class="highlighter-rouge">⟨ inj₂ z , inj₂ z′ ⟩</code> to <code class="highlighter-rouge">inj₂ z</code>, but it is
+easy to write a variant that instead returns <code class="highlighter-rouge">inj₂ z′</code>.  We have
+an embedding rather than an isomorphism because the
+<code class="highlighter-rouge">from</code> function must discard either <code class="highlighter-rouge">z</code> or <code class="highlighter-rouge">z′</code> in this case.</p>
+
+<p>In the usual approach to logic, both of the distribution laws
+are given as equivalences, where each side implies the other:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>A × (B ⊎ C) ⇔ (A × B) ⊎ (A × C)  
+A ⊎ (B × C) ⇔ (A ⊎ B) × (A ⊎ C)
+</code></pre></div></div>
+
+<p>But when we consider the functions that provide evidence for these
+implications, then the first corresponds to an isomorphism while the
+second only corresponds to an embedding, revealing a sense in which
+one of these laws is “more true” than the other.</p>
+
+<h4 id="exercise--weak--recommended">Exercise <code class="highlighter-rouge">⊎-weak-×</code> (recommended)</h4>
+
+<p>Show that the following property holds:</p>
+<pre class="Agda"><a id="22863" class="Keyword">postulate</a>
+  <a id="⊎-weak-×"></a><a id="22875" href="/Connectives/#22875" class="Postulate">⊎-weak-×</a> <a id="22884" class="Symbol">:</a> <a id="22886" class="Symbol">∀</a> <a id="22888" class="Symbol">{</a><a id="22889" href="/Connectives/#22889" class="Bound">A</a> <a id="22891" href="/Connectives/#22891" class="Bound">B</a> <a id="22893" href="/Connectives/#22893" class="Bound">C</a> <a id="22895" class="Symbol">:</a> <a id="22897" class="PrimitiveType">Set</a><a id="22900" class="Symbol">}</a> <a id="22902" class="Symbol">→</a> <a id="22904" class="Symbol">(</a><a id="22905" href="/Connectives/#22889" class="Bound">A</a> <a id="22907" href="/Connectives/#10059" class="Datatype Operator">⊎</a> <a id="22909" href="/Connectives/#22891" class="Bound">B</a><a id="22910" class="Symbol">)</a> <a id="22912" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="22914" href="/Connectives/#22893" class="Bound">C</a> <a id="22916" class="Symbol">→</a> <a id="22918" href="/Connectives/#22889" class="Bound">A</a> <a id="22920" href="/Connectives/#10059" class="Datatype Operator">⊎</a> <a id="22922" class="Symbol">(</a><a id="22923" href="/Connectives/#22891" class="Bound">B</a> <a id="22925" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="22927" href="/Connectives/#22893" class="Bound">C</a><a id="22928" class="Symbol">)</a></pre>
+<p>This is called a <em>weak distributive law</em>. Give the corresponding
+distributive law, and explain how it relates to the weak version.</p>
+
+<h4 id="exercise--implies-">Exercise <code class="highlighter-rouge">⊎×-implies-×⊎</code></h4>
+
+<p>Show that a disjunct of conjuncts implies a conjunct of disjuncts:</p>
+<pre class="Agda"><a id="23185" class="Keyword">postulate</a>
+  <a id="⊎×-implies-×⊎"></a><a id="23197" href="/Connectives/#23197" class="Postulate">⊎×-implies-×⊎</a> <a id="23211" class="Symbol">:</a> <a id="23213" class="Symbol">∀</a> <a id="23215" class="Symbol">{</a><a id="23216" href="/Connectives/#23216" class="Bound">A</a> <a id="23218" href="/Connectives/#23218" class="Bound">B</a> <a id="23220" href="/Connectives/#23220" class="Bound">C</a> <a id="23222" href="/Connectives/#23222" class="Bound">D</a> <a id="23224" class="Symbol">:</a> <a id="23226" class="PrimitiveType">Set</a><a id="23229" class="Symbol">}</a> <a id="23231" class="Symbol">→</a> <a id="23233" class="Symbol">(</a><a id="23234" href="/Connectives/#23216" class="Bound">A</a> <a id="23236" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="23238" href="/Connectives/#23218" class="Bound">B</a><a id="23239" class="Symbol">)</a> <a id="23241" href="/Connectives/#10059" class="Datatype Operator">⊎</a> <a id="23243" class="Symbol">(</a><a id="23244" href="/Connectives/#23220" class="Bound">C</a> <a id="23246" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="23248" href="/Connectives/#23222" class="Bound">D</a><a id="23249" class="Symbol">)</a> <a id="23251" class="Symbol">→</a> <a id="23253" class="Symbol">(</a><a id="23254" href="/Connectives/#23216" class="Bound">A</a> <a id="23256" href="/Connectives/#10059" class="Datatype Operator">⊎</a> <a id="23258" href="/Connectives/#23220" class="Bound">C</a><a id="23259" class="Symbol">)</a> <a id="23261" href="/Connectives/#1164" class="Datatype Operator">×</a> <a id="23263" class="Symbol">(</a><a id="23264" href="/Connectives/#23218" class="Bound">B</a> <a id="23266" href="/Connectives/#10059" class="Datatype Operator">⊎</a> <a id="23268" href="/Connectives/#23222" class="Bound">D</a><a id="23269" class="Symbol">)</a></pre>
+<p>Does the converse hold? If so, prove; if not, give a counterexample.</p>
+
+<h2 id="standard-library">Standard library</h2>
+
+<p>Definitions similar to those in this chapter can be found in the standard library:</p>
+<pre class="Agda"><a id="23470" class="Keyword">import</a> <a id="23477" href="https://agda.github.io/agda-stdlib/Data.Product.html" class="Module">Data.Product</a> <a id="23490" class="Keyword">using</a> <a id="23496" class="Symbol">(</a><a id="23497" href="https://agda.github.io/agda-stdlib/Data.Product.html#1353" class="Function Operator">_×_</a><a id="23500" class="Symbol">;</a> <a id="23502" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Sigma.html#155" class="Field">proj₁</a><a id="23507" class="Symbol">;</a> <a id="23509" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Sigma.html#167" class="Field">proj₂</a><a id="23514" class="Symbol">)</a> <a id="23516" class="Keyword">renaming</a> <a id="23525" class="Symbol">(</a><a id="23526" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Sigma.html#139" class="InductiveConstructor Operator">_,_</a> <a id="23530" class="Symbol">to</a> <a id="23533" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Sigma.html#139" class="InductiveConstructor Operator">⟨_,_⟩</a><a id="23538" class="Symbol">)</a>
+<a id="23540" class="Keyword">import</a> <a id="23547" href="https://agda.github.io/agda-stdlib/Data.Unit.html" class="Module">Data.Unit</a> <a id="23557" class="Keyword">using</a> <a id="23563" class="Symbol">(</a><a id="23564" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Unit.html#69" class="Record">⊤</a><a id="23565" class="Symbol">;</a> <a id="23567" href="https://agda.github.io/agda-stdlib/Agda.Builtin.Unit.html#106" class="InductiveConstructor">tt</a><a id="23569" class="Symbol">)</a>
+<a id="23571" class="Keyword">import</a> <a id="23578" href="https://agda.github.io/agda-stdlib/Data.Sum.html" class="Module">Data.Sum</a> <a id="23587" class="Keyword">using</a> <a id="23593" class="Symbol">(</a><a id="23594" href="https://agda.github.io/agda-stdlib/Data.Sum.Base.html#419" class="Datatype Operator">_⊎_</a><a id="23597" class="Symbol">;</a> <a id="23599" href="https://agda.github.io/agda-stdlib/Data.Sum.Base.html#475" class="InductiveConstructor">inj₁</a><a id="23603" class="Symbol">;</a> <a id="23605" href="https://agda.github.io/agda-stdlib/Data.Sum.Base.html#500" class="InductiveConstructor">inj₂</a><a id="23609" class="Symbol">)</a> <a id="23611" class="Keyword">renaming</a> <a id="23620" class="Symbol">(</a><a id="23621" href="https://agda.github.io/agda-stdlib/Data.Sum.Base.html#726" class="Function Operator">[_,_]</a> <a id="23627" class="Symbol">to</a> <a id="23630" href="https://agda.github.io/agda-stdlib/Data.Sum.Base.html#726" class="Function Operator">case-⊎</a><a id="23636" class="Symbol">)</a>
+<a id="23638" class="Keyword">import</a> <a id="23645" href="https://agda.github.io/agda-stdlib/Data.Empty.html" class="Module">Data.Empty</a> <a id="23656" class="Keyword">using</a> <a id="23662" class="Symbol">(</a><a id="23663" href="https://agda.github.io/agda-stdlib/Data.Empty.html#243" class="Datatype">⊥</a><a id="23664" class="Symbol">;</a> <a id="23666" href="https://agda.github.io/agda-stdlib/Data.Empty.html#360" class="Function">⊥-elim</a><a id="23672" class="Symbol">)</a>
+<a id="23674" class="Keyword">import</a> <a id="23681" href="https://agda.github.io/agda-stdlib/Function.Equivalence.html" class="Module">Function.Equivalence</a> <a id="23702" class="Keyword">using</a> <a id="23708" class="Symbol">(</a><a id="23709" href="https://agda.github.io/agda-stdlib/Function.Equivalence.html#935" class="Function Operator">_⇔_</a><a id="23712" class="Symbol">)</a></pre>
+<p>The standard library constructs pairs with <code class="highlighter-rouge">_,_</code> whereas we use <code class="highlighter-rouge">⟨_,_⟩</code>.
+The former makes it convenient to build triples or larger tuples from pairs,
+permitting <code class="highlighter-rouge">a , b , c</code> to stand for <code class="highlighter-rouge">(a , (b , c))</code>.  But it conflicts with
+other useful notations, such as <code class="highlighter-rouge">[_,_]</code> to construct a list of two elements in
+Chapter <a href="/Lists/">Lists</a>
+and <code class="highlighter-rouge">Γ , A</code> to extend environments in
+Chapter <a href="/DeBruijn/">DeBruijn</a>.
+The standard library <code class="highlighter-rouge">_⇔_</code> is similar to ours, but the one in the
+standard library is less convenient, since it is parameterised with
+respect to an arbitrary notion of equivalence.</p>
+
+<h2 id="unicode">Unicode</h2>
+
+<p>This chapter uses the following unicode:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>×  U+00D7  MULTIPLICATION SIGN (\x)
+⊎  U+228E  MULTISET UNION (\u+)
+⊤  U+22A4  DOWN TACK (\top)
+⊥  U+22A5  UP TACK (\bot)
+η  U+03B7  GREEK SMALL LETTER ETA (\eta)
+₁  U+2081  SUBSCRIPT ONE (\_1)
+₂  U+2082  SUBSCRIPT TWO (\_2)
+⇔  U+21D4  LEFT RIGHT DOUBLE ARROW (\&lt;=&gt;)
+</code></pre></div></div>
+
+  </div>
+
+  <p style="text-align:center;">
+    
+    <a alt="Previous chapter" href="/Isomorphism/">Prev</a>
+    &bullet;
+    
+    
+    <a alt="Source code" href="https://github.com/plfa/plfa.github.io/blob/dev/src/plfa/Connectives.lagda">Source</a>
+    
+    
+    &bullet;
+    <a alt="Next chapter" href="/Negation/">Next</a>
+    
+</p>
+
+
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Programming Language Foundations in Agda
+</h2><div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Philip Wadler</li>
+          <li><a class="u-email" href="mailto:wadler@inf.ed.ac.uk">wadler@inf.ed.ac.uk</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/wadler"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">wadler</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3"></div>
+    </div><div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Wen Kokke</li>
+          <li><a class="u-email" href="mailto:wen.kokke@ed.ac.uk">wen.kokke@ed.ac.uk</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/wenkokke"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">wenkokke</span></a></li><li><a href="https://www.twitter.com/wenkokke"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">wenkokke</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3"></div>
+    </div>This work is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>
+  </div>
+</footer>
+<!-- Import jQuery -->
+<script type="text/javascript" src="/assets/jquery.js"></script>
+
+<!-- Script which allows for foldable code blocks -->
+<script type="text/javascript">
+ $('div.foldable pre').each(function(){
+     var autoHeight = $(this).height();
+     var lineHeight = parseFloat($(this).css('line-height'));
+
+     var plus    = $("<div></div>");
+     var horLine = $("<div></div>");
+     var verLine = $("<div></div>");
+     $(this).prepend(plus);
+     plus.css({
+         'position'         : 'relative',
+         'float'            : 'right',
+         'right'            : '-' + (0.5 * lineHeight - 1.5) + 'px',
+         'width'            : lineHeight,
+         'height'           : lineHeight});
+     verLine.css({
+         'position'         : 'relative',
+         'height'           : lineHeight,
+         'width'            : '3px',
+         'background-color' : '#C1E0FF'});
+     horLine.css({
+         'position'         : 'relative',
+         'top'              : '-' + (0.5 * lineHeight + 1.5) + 'px',
+         'left'             : '-' + (0.5 * lineHeight - 1.5) + 'px',
+         'height'           : '3px',
+         'width'            : lineHeight,
+         'background-color' : '#C1E0FF'});
+     plus.append(verLine);
+     plus.append(horLine);
+
+     $(this).height(2.0 * lineHeight);
+     $(this).css('overflow','hidden');
+
+     $(this).click(function(){
+         if ($(this).height() == autoHeight) {
+             $(this).height(2.0 * lineHeight);
+             plus.show();
+         }
+         else {
+             $(this).height('auto');
+             plus.hide();
+         }
+     });
+ });
+</script>
+
+<!-- Import KaTeX -->
+<script type="text/javascript" src="/assets/katex.js"></script>
+
+<!-- Script which renders TeX using KaTeX -->
+<script type="text/javascript">
+ $("script[type='math/tex']").replaceWith(
+     function(){
+         var tex = $(this).text();
+         return "<span class=\"inline-equation\">" +
+                katex.renderToString(tex) +
+                "</span>";
+     });
+ $("script[type='math/tex; mode=display']").replaceWith(
+     function(){
+         var tex = $(this).text().replace(/%.*?(\n|$)/g,"");
+         return "<div class=\"equation\">" +
+                katex.renderToString("\\displaystyle "+tex) +
+                "</div>";
+     });
+</script>
+</body>
+
+</html>
